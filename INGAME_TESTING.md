@@ -67,6 +67,15 @@ Regeln und Eintragen von Ergebnissen: [PaTiAdmin/docs/TESTING.md](https://github
   - MANUAL RETEST REQUIRED
 - [ ] PT-TANK-051 Aktuelles Ziel wird angezeigt und wechselt mit
 - [ ] PT-TANK-052 Eigene Bedrohung auf dem Ziel wird angezeigt
+- [ ] PT-TANK-114 Zeile „Nächster:“ in der Gruppe: wer am nächsten am Aggro-Ziehen ist (Rolle oder Name) mit Prozent;
+  weiß unter 70 %, gelb ab 70 %, rot ab 90 %; bei 100 % zieht dieser Spieler wirklich
+  - 🔧 FIX IMPLEMENTED 2026-10-11 (Owner-Wunsch: vorher sehen, wer gleich Aggro zieht)
+  - MANUAL RETEST REQUIRED
+- [ ] PT-TANK-115 „Nächster: —“ ohne Ziel, solo, oder wenn du das Ziel nicht tankst; `/pt test` zeigt „Schaden 84 %“ gelb
+  - MANUAL RETEST REQUIRED
+- [ ] PT-TANK-116 Begleiter (Jägerpet/Wichtel) wird als „Begleiter“ berücksichtigt; im Kampf kein Lua-Fehler, Werte
+  aktualisieren sich laufend (nicht „unklar“ hängen bleiben)
+  - MANUAL RETEST REQUIRED
 
 ## Aggro Control
 

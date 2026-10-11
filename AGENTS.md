@@ -4,9 +4,9 @@
 Addon facts: `../../PaTiAdmin/docs/ARCHITECTURE.md` · open issues: `../../PaTiAdmin/docs/FOLLOW_UPS.md`.
 
 ## This addon
-- Purpose: own health, current target and your threat on it, plus an aggro control monitor, for a tank.
+- Purpose: current target, your threat on it, who pulls it next, plus an aggro control monitor, for a tank.
   Display only: never targets, taunts or clicks anything.
-- Files: `Logic.lua` (settings, threat value; pure, tested) · `Aggro.lua` (aggro states/summary; pure, tested) ·
+- Files: `Logic.lua` (settings, threat value; pure, tested) · `Aggro.lua` (aggro states/summary, next threat; pure, tested) ·
   `Threat.lua` (the only threat/nameplate API calls; tested with mocks) · `Plates.lua` (number marker frames on
   nameplates; tested with mocks) ·
   `PaTiTank.lua` (window, paint, scan scheduler, settings, commands, events) ·

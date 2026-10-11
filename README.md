@@ -9,6 +9,8 @@ enemies you do not hold any more. Display only — it never targets or taunts.
 
 ## Features
 - Your current target and your threat on it (no own health bar — that is not the tank addon's job)
+- **Next:** the group member closest to pulling your target, e.g. `Next: Mage 92 %` — white below 70 %, yellow from
+  70 %, red from 90 % (100 % = they pull it). Only while you tank the target; unreadable values show "unclear"
 - **Aggro control:** `AGGRO 5 / 6 under control` plus up to four rows for enemies that need you:
   red = lost, with who has it (role, else name, else "other player"), yellow = barely held, grey = unclear.
   Unreadable data is shown as "unclear", never as "under control"

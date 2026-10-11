@@ -108,3 +108,31 @@ function Threat.Scan()
     for _, unit in ipairs(PARTY_TARGETS) do consider(unit, true) end
     return enemies
 end
+
+-- UnitDetailedThreatSituation(unit, enemy) → isTanking, status, scaledPercent, …; nil percent = not on its threat
+-- list. Secret values, API errors or odd types become UNREADABLE (checked before any comparison).
+local function detailed(unit, enemy)
+    local ok, tanking, _, percent = pcall(UnitDetailedThreatSituation, unit, enemy)
+    if not ok then
+        Threat.lastError = tostring(tanking):sub(1, 120) -- /pt debug only
+        return UNREADABLE, UNREADABLE
+    end
+    if isSecret(tanking) then tanking = UNREADABLE else tanking = tanking == true or tanking == 1 end
+    if isSecret(percent) or (percent ~= nil and type(percent) ~= "number") then percent = UNREADABLE end
+    return tanking, percent
+end
+
+-- Input of Aggro.NextThreat for one enemy (e.g. "target"): whether you tank it, and the threat of every group member
+-- on it (members not on its threat list are left out). No API → you are not known to tank it: nothing to show.
+function Threat.Next(enemy)
+    if not UnitDetailedThreatSituation then return false, {} end
+    local tanking = detailed("player", enemy)
+    local others = {}
+    for _, member in ipairs(GROUP) do
+        if flag(UnitExists(member)) == true then
+            local _, percent = detailed(member, enemy)
+            if percent ~= nil then others[#others + 1] = { holder = holderOf(member), percent = percent } end
+        end
+    end
+    return tanking, others
+end

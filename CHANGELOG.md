@@ -5,6 +5,10 @@ History before this file: `git log`.
 
 ## [Unreleased]
 ### Added
+- "Next" line under the threat bar (owner 2026-10-11): the group member (or pet) closest to pulling your target,
+  with role or name and percent — yellow from 70 %, red from 90 % (WoW's scaled threat: 100 % = pulls, melee/ranged
+  rule included). Only while you tank the target; "—" otherwise, "unclear" when a value cannot be read. Test mode: a
+  damage dealer at 84 %.
 - Themes (owner wish 2026-10-03): Settings → Window → Theme — Default (the PaTi look as before), WoForever (warm brown, gold/bronze) or Dracula (dark, purple/pink/cyan accents). Colours only; layout, secure buttons and behaviour are unchanged. Saved per character in this addon (`theme`, unknown values → Default); Restore Defaults returns to Default. PaTiSuite can switch all PaTi windows at once.
 - Window settings (PaTiShared): panel opacity 30–100 % (default 75 %, the header stays opaque). The window registers
   itself for the optional PaTiSuite control panel, which shows/hides it with this addon's own rules. (Snapping to

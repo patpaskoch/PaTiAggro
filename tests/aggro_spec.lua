@@ -135,3 +135,33 @@ describe("Aggro.Alerts (for the optional PaTiAlerts)", function()
         assert.equal("Unknown enemy", alerts[2].text)
     end)
 end)
+
+describe("Aggro.NextThreat", function()
+    local healer, mage = { role = "HEALER" }, { name = "Magier", hasName = true }
+
+    it("names the member closest to pulling, with the state by distance", function()
+        local Aggro = load()
+        local result = Aggro.NextThreat(true, { { holder = healer, percent = 40 }, { holder = mage, percent = 91.6 } })
+        assert.equal(mage, result.holder)
+        assert.equal(92, result.percent)
+        assert.equal("DANGER", result.state)
+        assert.equal("WARNING", Aggro.NextThreat(true, { { holder = mage, percent = 70 } }).state)
+        assert.equal("LOW", Aggro.NextThreat(true, { { holder = mage, percent = 69 } }).state)
+    end)
+
+    it("shows nothing when you do not tank the target or nobody else is on it", function()
+        local Aggro = load()
+        assert.is_nil(Aggro.NextThreat(false, { { holder = mage, percent = 95 } }))
+        assert.is_nil(Aggro.NextThreat(true, {}))
+    end)
+
+    it("never reports LOW or WARNING while a value is unreadable", function()
+        local Aggro = load()
+        local U = Aggro.UNREADABLE
+        assert.equal("UNKNOWN", Aggro.NextThreat(U, {}).state)
+        local hidden = { holder = healer, percent = U }
+        assert.equal("UNKNOWN", Aggro.NextThreat(true, { { holder = mage, percent = 50 }, hidden }).state)
+        -- a readable danger is still shown: it is true whatever the unreadable member has
+        assert.equal("DANGER", Aggro.NextThreat(true, { { holder = mage, percent = 95 }, hidden }).state)
+    end)
+end)

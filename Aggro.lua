@@ -107,3 +107,32 @@ function Aggro.HolderLabel(holder)
     if holder.hasName then return "NAME" end
     return "OTHER"
 end
+
+-- "Who pulls next?" on your target (owner 2026-10-11): the group member closest to taking it from you.
+-- percent = UnitDetailedThreatSituation's scaled percent: 100 = that member pulls aggro now (WoW already counts the
+-- 110 % melee / 130 % ranged rule). Warning from NEXT_WARN, danger from NEXT_DANGER, so you act before it happens.
+Aggro.NEXT_WARN, Aggro.NEXT_DANGER = 70, 90
+
+-- tanking: true / false / UNREADABLE (you tank the target?); others: { { holder, percent = number | UNREADABLE } }.
+-- Returns nil when there is nothing to warn about (you do not tank it, or nobody else is on it), { state = "UNKNOWN" }
+-- when an unreadable value could hide a closer member, else { holder, percent (0-999, rounded), state =
+-- "LOW" | "WARNING" | "DANGER" }. Unreadable never becomes LOW — same rule as the aggro rows.
+function Aggro.NextThreat(tanking, others)
+    if tanking == Aggro.UNREADABLE then return { state = "UNKNOWN" } end
+    if tanking ~= true then return nil end
+    local best, unreadable
+    for _, other in ipairs(others) do
+        if other.percent == Aggro.UNREADABLE then
+            unreadable = true
+        elseif not best or other.percent > best.percent then
+            best = other
+        end
+    end
+    local percent = best and math.max(0, math.min(999, math.floor(best.percent + 0.5)))
+    if percent and percent >= Aggro.NEXT_DANGER then
+        return { holder = best.holder, percent = percent, state = "DANGER" }
+    end
+    if unreadable then return { state = "UNKNOWN" } end
+    if not best then return nil end
+    return { holder = best.holder, percent = percent, state = percent >= Aggro.NEXT_WARN and "WARNING" or "LOW" }
+end

@@ -9,7 +9,8 @@ local aggroEvents = {} -- event -> registered (see Events)
 
 local WIDTH, BAR_WIDTH, PAD, LINE = 280, 252, UI.Spacing.MD, 18
 local THREAT_HEIGHT = 16
-local TEST = { threat = 72 } -- test mode value in percent
+-- Test mode: your threat in percent, and a damage dealer at 84 % of pulling (yellow "Next" line).
+local TEST = { threat = 72, next = { holder = { role = "DAMAGER" }, percent = 84, state = "WARNING" } }
 
 local function say(key, ...)
     print("|cff68caffPaTiTank:|r " .. L[key]:format(...))
@@ -60,8 +61,23 @@ local threatTop = UI.Spacing.SM + LINE + UI.Spacing.SM
 local threat = makeBar(threatTop, THREAT_HEIGHT, "Danger", "THREAT")
 threat:SetMinMaxValues(0, 100)
 
+-- "Next: Mage 92 %" — the group member closest to pulling your target (Aggro.NextThreat). Who and percent are two
+-- strings because a member name may be secret (SetText only, never joined with other text).
+local nextTop = threatTop + THREAT_HEIGHT + UI.Spacing.SM
+local nextLabel = content:CreateFontString(nil, "OVERLAY", UI.Fonts.Muted)
+nextLabel:SetPoint("TOPLEFT", PAD, -nextTop - 2)
+UI.BindText(nextLabel, "NEXT")
+local nextPercent = content:CreateFontString(nil, "OVERLAY", UI.Fonts.Text)
+nextPercent:SetPoint("TOPRIGHT", -PAD, -nextTop - 2)
+nextPercent:SetJustifyH("RIGHT")
+local nextWho = content:CreateFontString(nil, "OVERLAY", UI.Fonts.Text)
+nextWho:SetPoint("LEFT", nextLabel, "RIGHT", UI.Spacing.SM, 0)
+nextWho:SetPoint("RIGHT", nextPercent, "LEFT", -UI.Spacing.SM, 0)
+nextWho:SetJustifyH("LEFT")
+nextWho:SetWordWrap(false)
+
 -- Aggro block: "AGGRO  x / y under control", then up to Aggro.MAX_ROWS enemies you do not (safely) hold.
-local aggroTop = threatTop + THREAT_HEIGHT + UI.Spacing.MD
+local aggroTop = nextTop + LINE + UI.Spacing.MD
 local aggroLabel = content:CreateFontString(nil, "OVERLAY", UI.Fonts.Label)
 aggroLabel:SetPoint("TOPLEFT", PAD, -aggroTop)
 UI.BindText(aggroLabel, "AGGRO")
@@ -102,17 +118,43 @@ local rowUnit = {}     -- row index -> nameplate token its number belongs to (cl
 
 -- Paint (threat values may be secret: they only reach the StatusBar widget) ------------------------------
 
+-- A group member: role first, then name (may be secret: only handed to SetText), else "other player".
+local function memberText(holder)
+    local label = Aggro.HolderLabel(holder)
+    if label == "NAME" then return holder.name end
+    return L[label] or L.OTHER_PLAYER
+end
+
+local NEXT_COLOR = { LOW = "Text", WARNING = "Warning", DANGER = "Danger" }
+
+local function paintNext(info)
+    if not info or info.state == "UNKNOWN" then
+        nextWho:SetText(info and L.AGGRO_UNKNOWN or L.NEXT_NONE)
+        nextWho:SetTextColor(UI.Color("TextMuted"))
+        nextPercent:SetText("")
+        return
+    end
+    local color = NEXT_COLOR[info.state]
+    nextWho:SetText(memberText(info.holder))
+    nextWho:SetTextColor(UI.Color(color))
+    nextPercent:SetText(("%d %%"):format(info.percent))
+    nextPercent:SetTextColor(UI.Color(color))
+end
+
 local function paintTarget()
     if testMode then
         targetName:SetText(L.TEST_TARGET)
         threat:SetValue(TEST.threat)
+        paintNext(TEST.next)
     elseif UnitExists("target") then
         targetName:SetText(UnitName("target"))
         local _, _, percent = UnitDetailedThreatSituation("player", "target")
         threat:SetValue(Logic.ThreatValue(percent, isSecret))
+        paintNext(Aggro.NextThreat(Threat.Next("target")))
     else
         targetName:SetText(L.NO_TARGET)
         threat:SetValue(0)
+        paintNext(nil)
     end
 end
 
@@ -129,9 +171,7 @@ local TEST_ENEMIES = {
 local function holderText(enemy)
     if enemy.state == "DANGER" then return L.AGGRO_DANGER end
     if enemy.state == "UNKNOWN" then return L.AGGRO_UNKNOWN end
-    local label = Aggro.HolderLabel(enemy.holder)
-    if label == "NAME" then return enemy.holder.name end -- may be secret: only handed to SetText
-    return L[label] or L.OTHER_PLAYER
+    return memberText(enemy.holder)
 end
 
 local alertsError -- last error PaTiAlerts raised in Sync (diagnostics only, /pt debug)
@@ -430,7 +470,10 @@ events:SetScript("OnEvent", function(_, event, unit)
         paintAll()
     elseif event == "UNIT_TARGET" then
         if PARTY[unit] then requestScan() end -- fires for every unit (nameplates too); only party targets matter
-    elseif event == "GROUP_ROSTER_UPDATE" or event == "PLAYER_REGEN_DISABLED" or event == "PLAYER_REGEN_ENABLED" then
+    elseif event == "GROUP_ROSTER_UPDATE" then
+        paintTarget() -- the "Next" line reads the group
+        requestScan()
+    elseif event == "PLAYER_REGEN_DISABLED" or event == "PLAYER_REGEN_ENABLED" then
         requestScan()
     else -- target changed or threat changed
         paintTarget()

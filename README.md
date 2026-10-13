@@ -7,6 +7,33 @@ enemies you do not hold any more. Display only — it never targets or taunts.
 
 > Status: 0.1.0, in development, not yet released. Not yet tested in game.
 
+## 🇩🇪 Installieren in 4 Schritten
+
+### 1. Herunterladen
+Oben auf dieser Seite auf den grünen Knopf **`<> Code`** klicken → ganz unten **Download ZIP**.
+Die Datei `PaTiTank-main.zip` landet in deinem Ordner **Downloads**.
+
+### 2. Den AddOns-Ordner öffnen
+Battle.net öffnen → **World of Warcraft** auswählen → oben die Version **WoW Forever** wählen →
+auf das **Zahnrad** neben „Spielen“ klicken → **Im Explorer anzeigen**.
+Im Fenster, das aufgeht, nacheinander doppelklicken: **`_classic_beta_`** → **`Interface`** → **`AddOns`**.
+(Gibt es `AddOns` noch nicht: Rechtsklick in den leeren Bereich → **Neu → Ordner** → `AddOns` nennen.)
+
+### 3. Den Ordner hineinziehen und umbenennen
+In **Downloads** die Datei `PaTiTank-main.zip` doppelklicken. Darin ist ein Ordner **`PaTiTank-main`** —
+den mit der Maus in den **AddOns**-Ordner ziehen. Dann dort: Rechtsklick auf den Ordner → **Umbenennen** →
+**`PaTiTank`** (ohne „-main“, sonst lädt WoW ihn nicht).
+
+✅ Richtig ist es, wenn du im Ordner `PaTiTank` direkt die Datei `PaTiTank.toc` siehst.
+
+### 4. Im Spiel einschalten
+WoW starten → in der Charakterauswahl unten links **AddOns** → Haken bei **PaTiTank** →
+(falls angezeigt: Haken bei **Veraltete AddOns laden**) → **Okay** → einloggen.
+
+Im Chat **`/pt test`** eingeben: Jetzt siehst du das Fenster mit Beispiel-Gegnern. Nochmal `/pt test` beendet die Vorschau.
+
+Klappt etwas nicht? Schreib einfach, bei welchem Schritt du hängst — am besten mit einem Screenshot.
+
 ## Features
 - Your current target and your threat on it (no own health bar — that is not the tank addon's job)
 - **Next:** the group member closest to pulling your target, e.g. `Next: Mage 92 %` — white below 70 %, yellow from

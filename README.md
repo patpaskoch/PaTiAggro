@@ -17,6 +17,8 @@ Die Datei `PaTiTank-main.zip` landet in deinem Ordner **Downloads**.
 Battle.net öffnen → **World of Warcraft** auswählen → oben die Version **WoW Forever** wählen →
 auf das **Zahnrad** neben „Spielen“ klicken → **Im Explorer anzeigen**.
 Im Fenster, das aufgeht, nacheinander doppelklicken: **`_classic_beta_`** → **`Interface`** → **`AddOns`**.
+WoW Forever liegt immer in **`_classic_beta_`**, auch wenn daneben `_retail_` oder `_classic_` liegen (die sind für andere
+WoW-Versionen). Öffnet sich schon `_classic_beta_`, geht es direkt mit `Interface` weiter.
 (Gibt es `AddOns` noch nicht: Rechtsklick in den leeren Bereich → **Neu → Ordner** → `AddOns` nennen.)
 
 ### 3. Den Ordner hineinziehen und umbenennen

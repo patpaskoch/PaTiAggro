@@ -174,3 +174,16 @@ describe("Threat.Self and PlayerRole", function()
         assert.equal(64, ns.Threat.Scan()[1].playerPercent)
     end)
 end)
+
+describe("Threat.ZeroThreat", function()
+    it("is true only for a living enemy while the threat API exists", function()
+        local ns = setup({ player = {}, target = { enemy = true }, focus = { enemy = false },
+            boss = { enemy = true, dead = true } })
+        _G.UnitDetailedThreatSituation = function() return nil end
+        assert.is_true(ns.Threat.ZeroThreat("target"))
+        assert.is_false(ns.Threat.ZeroThreat("focus"))
+        assert.is_false(ns.Threat.ZeroThreat("boss"))
+        _G.UnitDetailedThreatSituation = nil
+        assert.is_false(ns.Threat.ZeroThreat("target"))
+    end)
+end)

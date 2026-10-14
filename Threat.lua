@@ -154,3 +154,9 @@ function Threat.PlayerRole()
     if value == "PET" then return nil end
     return value
 end
+
+-- An enemy with no threat yet (nobody attacked it) is on no threat list: Threat.Self gives nil. The window shows 0 %
+-- for it, but only when that is true — the threat API exists and the unit is a living enemy you could attack.
+function Threat.ZeroThreat(unit)
+    return UnitDetailedThreatSituation ~= nil and isEnemy(unit)
+end

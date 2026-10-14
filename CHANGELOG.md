@@ -57,6 +57,8 @@ History before this file: `git log`.
 - Only your own UNIT_HEALTH/UNIT_MAXHEALTH updates the health bar (before: every unit's health event redrew everything).
 - Settings in PaTiTankDB get a schema; the 0.1.0 position and lock state are kept.
 ### Fixed
+- An enemy target nobody has attacked yet now shows 0 % instead of no number (owner 2026-10-14). Friendly targets
+  and clients without the threat API still show no number.
 - Hardening: a broken SavedVariables save (not a table, a broken schema or scale) no longer breaks the login; only the broken value is replaced, every valid setting (also `false`) stays, and the migration is idempotent (tests/robustness_spec.lua).
 - Settings: the first section title showed the key "GENERAL" (no text for it); now "General" / "Allgemein" (FOLLOW_UPS F30).
 - An enemy that is your target and has a nameplate keeps its nameplate token in the aggro scan.

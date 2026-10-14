@@ -184,3 +184,7 @@ Panel-Zeilen sind nicht klickbar (technisch blockiert, F17) und werden nicht get
 - [ ] PT-AGGRO-019 Aggro-Block kurz: links „AGGRO“, rechts nur „2 / 2“ (ohne „unter Kontrolle“); Heiler/Schaden:
   „AUF DIR“ und rechts die Anzahl
   - MANUAL RETEST REQUIRED
+- [ ] PT-AGGRO-020 Gegner im Ziel, noch nicht angegriffen: Balken zeigt Namen und „0 %“; freundliches Ziel: keine Zahl
+  - Owner 2026-10-14: bei nicht angegriffenem Ziel stand keine Zahl statt „0 %“ → ❌ FAIL 2026-10-14
+  - 🔧 FIX IMPLEMENTED 2026-10-14
+  - MANUAL RETEST REQUIRED

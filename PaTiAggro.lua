@@ -191,8 +191,12 @@ local function paintTarget()
     elseif UnitExists("target") then
         local _, _, percent = UnitDetailedThreatSituation("player", "target")
         threat:SetValue(Logic.ThreatValue(percent, isSecret))
-        local mine = Aggro.SelfThreat("TANK", Threat.Self("target"))
-        paintBarText(UnitName("target"), mine and mine.percent)
+        local status, own = Threat.Self("target")
+        local mine = Aggro.SelfThreat("TANK", status, own)
+        -- Not attacked yet: no threat list, so no values — that is 0 % for an enemy (owner 2026-10-14), never a guess.
+        local shown = mine and mine.percent
+        if status == nil and own == nil and Threat.ZeroThreat("target") then shown = 0 end
+        paintBarText(UnitName("target"), shown)
         paintBarColor(mine and mine.state)
         paintNext(Aggro.NextThreat(Threat.Next("target")))
     else
@@ -225,9 +229,15 @@ local function paintSelf(enemies)
     end
     if not info then
         threat:SetValue(0)
-        paintBarText(nil, nil)
-        paintBarColor(nil)
         setLine(false)
+        -- No threat anywhere yet: an enemy target shows 0 % (owner 2026-10-14); nothing else to show without one.
+        if not testMode and Threat.ZeroThreat("target") then
+            paintBarText(UnitName("target"), 0)
+            paintBarColor("GOOD")
+        else
+            paintBarText(nil, nil)
+            paintBarColor(nil)
+        end
         return
     end
     threat:SetValue(info.state == "AGGRO" and 100 or math.min(100, info.percent or 0))

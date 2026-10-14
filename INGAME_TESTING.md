@@ -73,12 +73,13 @@ Regeln und Eintragen von Ergebnissen: [PaTiAdmin/docs/TESTING.md](https://github
   - MANUAL RETEST REQUIRED
 - [ ] PT-TANK-051 Aktuelles Ziel wird angezeigt und wechselt mit
 - [ ] PT-TANK-052 Eigene Bedrohung auf dem Ziel wird angezeigt
-- [ ] PT-TANK-114 Zeile „Nächster:“ in der Gruppe: wer am nächsten am Aggro-Ziehen ist (Rolle oder Name) mit Prozent;
+- ~~PT-TANK-114 Zeile „Nächster:“ in der Gruppe: wer am nächsten am Aggro-Ziehen ist (Rolle oder Name) mit Prozent;~~
   erscheint nur ab 70 % (gelb), rot ab 90 %; unter 70 % keine Zeile; bei 100 % zieht dieser Spieler wirklich
   - 🔧 FIX IMPLEMENTED 2026-10-11 (Owner-Wunsch: vorher sehen, wer gleich Aggro zieht)
   - MANUAL RETEST REQUIRED
   - 🔧 FIX IMPLEMENTED 2026-10-14 (Owner: Zeile nur, wenn es wichtig ist)
   - MANUAL RETEST REQUIRED
+  - RETIRED 2026-10-14 – „Nächster“ entfällt (Owner), ersetzt durch AGGRO AKTUELL: PT-AGGRO-025
 - ~~PT-TANK-115 „Nächster: —“ ohne Ziel, solo, oder wenn du das Ziel nicht tankst; `/pt test` zeigt „Schaden 84 %“ gelb~~
   - RETIRED 2026-10-14 – die Zeile „Nächster“ erscheint nur noch ab 70 % (Owner), ersetzt durch PT-AGGRO-018
 - [ ] PT-TANK-116 Begleiter (Jägerpet/Wichtel) wird als „Begleiter“ berücksichtigt; im Kampf kein Lua-Fehler, Werte
@@ -152,6 +153,9 @@ Panel-Zeilen sind nicht klickbar (technisch blockiert, F17) und werden nicht get
 
 ## Rollen
 
+> Seit 2026-10-14 (drei Bereiche): Die Tank-Farbe steht am Balken „hat Aggro“ in AGGRO AKTUELL; die Bedrohung von
+> Heiler/Schaden steht rechts bei AGGRO GESAMT; „AUF DIR“ ist der dritte Bereich.
+
 - [ ] PT-AGGRO-010 Einstellung „Meine Rolle“: Auto / Tank / Heiler / Schaden; Wechsel sofort sichtbar (Beschriftungen,
   Block „AGGRO“ ↔ „AUF DIR“), bleibt nach `/reload`
   - MANUAL RETEST REQUIRED
@@ -175,12 +179,14 @@ Panel-Zeilen sind nicht klickbar (technisch blockiert, F17) und werden nicht get
 
 ## Anzeige (vereinfacht 2026-10-14)
 
-- [ ] PT-AGGRO-017 Keine Zeile „Ziel:“ mehr; ganz oben der Balken: links der Name des Gegners, rechts deine Prozent;
+- ~~PT-AGGRO-017 Keine Zeile „Ziel:“ mehr; ganz oben der Balken: links der Name des Gegners, rechts deine Prozent;~~~~
   ohne Ziel (Tank) ist der Balken leer, ohne Text; Farbe Tank: grün/gelb/rot nach Status
   - MANUAL RETEST REQUIRED
-- [ ] PT-AGGRO-018 Die Warnzeile unter dem Balken erscheint nur, wenn es wichtig ist (Tank: „Nächster“ ab 70 %;
+  - RETIRED 2026-10-14 – Anzeige in drei Bereiche umgebaut (Owner), ersetzt durch PT-AGGRO-024–026
+- ~~PT-AGGRO-018 Die Warnzeile unter dem Balken erscheint nur, wenn es wichtig ist (Tank: „Nächster“ ab 70 %;~~
   Heiler/Schaden: „ziehst gleich“ ab 90 % oder „AGGRO auf dir!“); sonst rückt der Aggro-Block nach oben, keine Lücke
   - MANUAL RETEST REQUIRED
+  - RETIRED 2026-10-14 – Anzeige in drei Bereiche umgebaut (Owner), ersetzt durch PT-AGGRO-024–026
 - [ ] PT-AGGRO-019 Aggro-Block kurz: links „AGGRO“, rechts nur „2 / 2“ (ohne „unter Kontrolle“); Heiler/Schaden:
   „AUF DIR“ und rechts die Anzahl
   - MANUAL RETEST REQUIRED
@@ -188,18 +194,33 @@ Panel-Zeilen sind nicht klickbar (technisch blockiert, F17) und werden nicht get
   - Owner 2026-10-14: bei nicht angegriffenem Ziel stand keine Zahl statt „0 %“ → ❌ FAIL 2026-10-14
   - 🔧 FIX IMPLEMENTED 2026-10-14
   - MANUAL RETEST REQUIRED
-- [ ] PT-AGGRO-021 Tank „Nächster“ als kleiner Balken unter dem Bedrohungsbalken: Spielername links, Prozent rechts,
+- ~~PT-AGGRO-021 Tank „Nächster“ als kleiner Balken unter dem Bedrohungsbalken: Spielername links, Prozent rechts,~~
   gelb ab 70 %, rot ab 90 %; `/paggro test` zeigt „Lyra 84 %“ gelb
   - Owner 2026-10-14: Zeile „Nächster: Schaden 84 %“ unklar (Rolle statt Name, eigene 100 % daneben) → Balken mit Namen
   - 🔧 FIX IMPLEMENTED 2026-10-14
   - MANUAL RETEST REQUIRED
-- [ ] PT-AGGRO-022 Reihenfolge: oben „AGGRO GESAMT 5 / 6“, darunter Ziel-Balken, dann „Nächster“-Balken (nur ab 70 %),
+  - RETIRED 2026-10-14 – „Nächster“-Balken entfällt (Owner), ersetzt durch PT-AGGRO-025
+- ~~PT-AGGRO-022 Reihenfolge: oben „AGGRO GESAMT 5 / 6“, darunter Ziel-Balken, dann „Nächster“-Balken (nur ab 70 %),~~~~
   dann die Gegnerzeilen; keine Lücke
   - Owner 2026-10-14: Gesamtzahl gehört nach oben → umgestellt
   - 🔧 FIX IMPLEMENTED 2026-10-14
   - MANUAL RETEST REQUIRED
+  - RETIRED 2026-10-14 – Anzeige in drei Bereiche umgebaut (Owner), ersetzt durch PT-AGGRO-024–026
 - [ ] PT-AGGRO-023 Gelbe Zeile (du hältst den Gegner noch knapp): rechts steht, wer ihn gleich übernimmt (Rolle oder
   Name), sonst „fast weg“; `/paggro test` zeigt „Zombie → Schaden“ gelb
   - Owner 2026-10-14: „Zombie knapp“ unverständlich → zeigt jetzt, wer gleich übernimmt
   - 🔧 FIX IMPLEMENTED 2026-10-14
+  - MANUAL RETEST REQUIRED
+- [ ] PT-AGGRO-024 Drei Bereiche mit deutlichem Abstand: AGGRO GESAMT (5 / 6), AGGRO AKTUELL (Gegnername rechts),
+  AGGRO TEAM; kein „Nächster“ und kein einzelner Bedrohungsbalken mehr
+  - Owner 2026-10-14: „Nächster“ unverständlich, drei Bereiche gewünscht → umgebaut
+  - 🔧 FIX IMPLEMENTED 2026-10-14
+  - MANUAL RETEST REQUIRED
+- [ ] PT-AGGRO-025 AGGRO AKTUELL: du und jeder Mitspieler (und Begleiter) auf deinem Ziel als Balken „Name (Rolle)“,
+  ohne Rolle „Name (Klasse)“; wer die Aggro hat, steht oben mit „hat Aggro“ (grün, wenn richtig; rot, wenn falsch),
+  die anderen sortiert nach Prozent (gelb ab 70 %, rot ab 90 %); `/paggro test`: Brom (Tank) hat Aggro, Lyra
+  (Schaden) 84 %, Mira (Heiler) 35 %
+  - MANUAL RETEST REQUIRED
+- [ ] PT-AGGRO-026 AGGRO TEAM: rechts „Name (Rolle)“ statt nur Rolle — rot: wer den Gegner hat, gelb: wer ihn gleich
+  übernimmt; `/paggro test`: Ghul → Mira (Heiler), Zombie → Lyra (Schaden)
   - MANUAL RETEST REQUIRED

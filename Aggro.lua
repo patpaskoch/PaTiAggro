@@ -108,33 +108,38 @@ function Aggro.HolderLabel(holder)
     return "OTHER"
 end
 
--- "Who pulls next?" on your target (owner 2026-10-11): the group member closest to taking it from you.
--- percent = UnitDetailedThreatSituation's scaled percent: 100 = that member pulls aggro now (WoW already counts the
--- 110 % melee / 130 % ranged rule). Warning from NEXT_WARN, danger from NEXT_DANGER, so you act before it happens.
+-- Thresholds of the scaled percent (owner 2026-10-14: 70/90 suite wide): 100 = that member pulls aggro now (WoW
+-- already counts the 110 % melee / 130 % ranged rule). Warning from NEXT_WARN, danger from NEXT_DANGER.
 Aggro.NEXT_WARN, Aggro.NEXT_DANGER = 70, 90
 
--- tanking: true / false / UNREADABLE (you tank the target?); others: { { holder, percent = number | UNREADABLE } }.
--- Returns nil when there is nothing to warn about (you do not tank it, or nobody else is on it), { state = "UNKNOWN" }
--- when an unreadable value could hide a closer member, else { holder, percent (0-999, rounded), state =
--- "LOW" | "WARNING" | "DANGER" }. Unreadable never becomes LOW — same rule as the aggro rows.
-function Aggro.NextThreat(tanking, others)
-    if tanking == Aggro.UNREADABLE then return { state = "UNKNOWN" } end
-    if tanking ~= true then return nil end
-    local best, unreadable
-    for _, other in ipairs(others) do
-        if other.percent == Aggro.UNREADABLE then
-            unreadable = true
-        elseif not best or other.percent > best.percent then
-            best = other
+-- "AGGRO NOW" rows for one enemy (owner 2026-10-14): entries from Threat.Current, sorted — the one who has the aggro
+-- first, then by percent, unreadable last. Each row gets .state: "HOLDS" (has the aggro), "GOOD" (below NEXT_WARN),
+-- "WARNING" (from NEXT_WARN), "DANGER" (from NEXT_DANGER, about to pull) or "UNKNOWN"; .percent rounded (0-999).
+-- At most max rows.
+function Aggro.CurrentRows(entries, max)
+    local rows = {}
+    for _, entry in ipairs(entries) do
+        local row = { holder = entry.holder, isPlayer = entry.isPlayer }
+        if entry.tanking == true then
+            row.state = "HOLDS"
+        elseif type(entry.percent) ~= "number" then
+            row.state = "UNKNOWN"
         end
+        if type(entry.percent) == "number" then
+            row.percent = math.max(0, math.min(999, math.floor(entry.percent + 0.5)))
+            row.state = row.state or (row.percent >= Aggro.NEXT_DANGER and "DANGER")
+                or (row.percent >= Aggro.NEXT_WARN and "WARNING") or "GOOD"
+        end
+        rows[#rows + 1] = row
     end
-    local percent = best and math.max(0, math.min(999, math.floor(best.percent + 0.5)))
-    if percent and percent >= Aggro.NEXT_DANGER then
-        return { holder = best.holder, percent = percent, state = "DANGER" }
+    local function rank(row)
+        if row.state == "HOLDS" then return 2000 end
+        if row.state == "UNKNOWN" then return -1 end
+        return row.percent
     end
-    if unreadable then return { state = "UNKNOWN" } end
-    if not best then return nil end
-    return { holder = best.holder, percent = percent, state = percent >= Aggro.NEXT_WARN and "WARNING" or "LOW" }
+    table.sort(rows, function(a, b) return rank(a) > rank(b) end)
+    while #rows > max do table.remove(rows) end
+    return rows
 end
 
 -- Your own threat on one enemy, by your role (owner 2026-10-14). status = your threat status on it (0-3, nil = you are

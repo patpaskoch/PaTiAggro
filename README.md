@@ -47,28 +47,41 @@ Klappt etwas nicht? Schreib einfach, bei welchem Schritt du hängst — am beste
 - **My role** (Settings): Auto, Tank, Healer or Damage. Auto uses the role WoW reports for you in the group; without
   one it shows the tank view. Never guessed from your class.
 
-**Tank view** (top to bottom)
-- **AGGRO TOTAL 5 / 6:** how many of the enemies your group fights you hold
-- **Threat bar:** your target's name on the left, your threat percent on the right. The colour comes from your threat
-  status, not the percent (while you tank, WoW reports 100 % for you): green = you hold it, yellow = you hold it but
-  someone has more threat, red = someone else has it. No target: an empty bar
-- **Next:** a small bar, only when it matters — the player (by name) closest to pulling your target, from 70 %
-  (yellow), red from 90 %. Their percent is how far they are to taking it (100 % = they pull it); yours stays at
-  100 % while you hold it — two different scales, both from WoW
-- **Rows:** up to four enemies that need you — red = lost, with who has it (role, else name, else "other player");
-  yellow = you still hold it but the named member is about to take it ("slipping" when WoW does not say who);
-  grey = unclear. Unreadable data is shown as "unclear", never as held
-- With **PaTiAlerts** installed (optional), the lost and barely held rows also appear there, with the same number
+The window has three sections, top to bottom, with clear space between them:
 
-**Healer / damage view**
-- **Threat bar:** the enemy you are closest to pulling, over your target and every enemy your group fights (healing
-  threat lands on all of them) — its name left, your percent right; green below 70 %, yellow from 70 %, red from 90 %.
-  Under the bar only when it matters: `You: about to pull` (from 90 %) or `AGGRO on you!` (red, full bar)
-- **ON YOU:** up to four rows for the enemies that attack you, numbered on their nameplates like in the tank view
+```
+AGGRO TOTAL                     5 / 6
+AGGRO NOW                   Test enemy
+[ Brom (Tank)              has aggro ]   green: the right one has it
+[ Lyra (Damage)                 84 % ]   yellow from 70 %, red from 90 % (100 % = they take it)
+[ Mira (Healer)                 35 % ]
+AGGRO TEAM
+▌1 Ghoul                Mira (Healer)    red: Mira has it
+▌2 Zombie               Lyra (Damage)    yellow: you still hold it, Lyra is about to take it
+```
+
+**AGGRO TOTAL**
+- Tank: how many of the enemies your group fights you hold (`5 / 6`)
+- Healer/damage: your highest threat over your target and every enemy the group fights (healing threat lands on all
+  of them) — white below 70 %, yellow from 70 %, red from 90 %, `AGGRO on you!` as soon as an enemy attacks you
+
+**AGGRO NOW** — your target's name on the right
+- You and every group member (and pet) on its threat list, sorted: who has the aggro first, then by percent
+- Each as `Name (Role)` — the role when WoW assigned one, else the class
+- The one who has it shows "has aggro": green when that is right (you as tank, or the tank when you are not),
+  red when not. Everyone else shows how far they are to taking it (100 % = they pull it). An enemy nobody attacked
+  yet shows you with 0 %
+
+**AGGRO TEAM** (healer/damage: **ON YOU**)
+- Tank: up to four enemies that need you — red = lost, with `Name (Role)` of who has it; yellow = you still hold it
+  but `Name (Role)` is about to take it ("slipping" when WoW does not say who); grey = unclear.
+  Unreadable data is shown as "unclear", never as held
+- Healer/damage: the enemies that attack you
+- With **PaTiAlerts** installed (optional), the tank's lost and slipping rows also appear there, with the same number
 
 **Both views**
 - Enemies come from your target, visible nameplates and your party's targets
-- **Numbered nameplates:** every row gets a number (`1 Kultist → Healer`), and the same number stands above
+- **Numbered nameplates:** every AGGRO TEAM row gets a number (`1 Ghoul`), and the same number stands above
   that enemy's nameplate — red = lost / on you, yellow = barely held, grey = unclear. Two enemies with the same name
   are told apart by their number. Click the nameplate with that number to target the enemy.
   PaTiAggro never targets or taunts on its own

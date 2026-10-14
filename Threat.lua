@@ -53,7 +53,8 @@ end
 -- Name values are only handed to SetText, never compared; hasName records whether there is one to show.
 local function holderOf(member)
     local name = UnitName(member)
-    return { unit = member, role = role(member), name = name, hasName = isSecret(name) or name ~= nil }
+    local class = UnitClass and UnitClass(member) -- localized class name; may be secret (shown only when readable)
+    return { unit = member, role = role(member), name = name, hasName = isSecret(name) or name ~= nil, class = class }
 end
 
 -- Status 2 = you still tank it, but someone has more threat and is about to take it: that member (status 1 on it)
@@ -138,19 +139,26 @@ local function detailed(unit, enemy)
     return tanking, percent, status
 end
 
--- Input of Aggro.NextThreat for one enemy (e.g. "target"): whether you tank it, and the threat of every group member
--- on it (members not on its threat list are left out). No API → you are not known to tank it: nothing to show.
-function Threat.Next(enemy)
-    if not UnitDetailedThreatSituation then return false, {} end
-    local tanking = detailed("player", enemy)
-    local others = {}
-    for _, member in ipairs(GROUP) do
-        if flag(UnitExists(member)) == true then
-            local _, percent = detailed(member, enemy)
-            if percent ~= nil then others[#others + 1] = { holder = holderOf(member), percent = percent } end
+-- "AGGRO NOW" for one enemy (e.g. "target", owner 2026-10-14): you and every group member on its threat list, each
+-- with whether they tank it and their scaled percent (100 = they pull it). Members not on the list are left out;
+-- you are always listed when the threat API exists (0 % on an enemy nobody attacked yet — Threat.ZeroThreat).
+function Threat.Current(enemy)
+    local list = {}
+    if not UnitDetailedThreatSituation then return list end
+    local function add(unit, isPlayer)
+        local tanking, percent = detailed(unit, enemy)
+        if percent == nil and tanking ~= true and not isPlayer then return end
+        if isPlayer and percent == nil and tanking ~= true then
+            if not Threat.ZeroThreat(enemy) then return end
+            percent = 0
         end
+        list[#list + 1] = { holder = holderOf(unit), percent = percent, tanking = tanking, isPlayer = isPlayer }
     end
-    return tanking, others
+    add("player", true)
+    for _, member in ipairs(GROUP) do
+        if flag(UnitExists(member)) == true then add(member, false) end
+    end
+    return list
 end
 
 -- Your own threat on one enemy: status (0-3) and scaled percent; nil = not on its threat list, UNREADABLE = secret or

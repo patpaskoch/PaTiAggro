@@ -136,33 +136,27 @@ describe("Aggro.Alerts (for the optional PaTiAlerts)", function()
     end)
 end)
 
-describe("Aggro.NextThreat", function()
-    local healer, mage = { role = "HEALER" }, { name = "Magier", hasName = true }
+describe("Aggro.CurrentRows", function()
+    local me, mage, healer = { name = "Brom" }, { name = "Lyra" }, { name = "Mira" }
 
-    it("names the member closest to pulling, with the state by distance", function()
+    it("puts the aggro holder first, then sorts by percent, with states by 70/90", function()
         local Aggro = load()
-        local result = Aggro.NextThreat(true, { { holder = healer, percent = 40 }, { holder = mage, percent = 91.6 } })
-        assert.equal(mage, result.holder)
-        assert.equal(92, result.percent)
-        assert.equal("DANGER", result.state)
-        assert.equal("WARNING", Aggro.NextThreat(true, { { holder = mage, percent = 70 } }).state)
-        assert.equal("LOW", Aggro.NextThreat(true, { { holder = mage, percent = 69 } }).state)
+        local rows = Aggro.CurrentRows({ { holder = healer, percent = 35 }, { holder = me, percent = 100, tanking = true,
+            isPlayer = true }, { holder = mage, percent = 91.6 } }, 6)
+        assert.same({ me, mage, healer }, { rows[1].holder, rows[2].holder, rows[3].holder })
+        assert.same({ "HOLDS", "DANGER", "GOOD" }, { rows[1].state, rows[2].state, rows[3].state })
+        assert.equal(92, rows[2].percent)
+        assert.is_true(rows[1].isPlayer)
+        assert.equal("WARNING", Aggro.CurrentRows({ { holder = mage, percent = 70 } }, 6)[1].state)
     end)
 
-    it("shows nothing when you do not tank the target or nobody else is on it", function()
+    it("puts unreadable values last and never as GOOD, and keeps at most max rows", function()
         local Aggro = load()
-        assert.is_nil(Aggro.NextThreat(false, { { holder = mage, percent = 95 } }))
-        assert.is_nil(Aggro.NextThreat(true, {}))
-    end)
-
-    it("never reports LOW or WARNING while a value is unreadable", function()
-        local Aggro = load()
-        local U = Aggro.UNREADABLE
-        assert.equal("UNKNOWN", Aggro.NextThreat(U, {}).state)
-        local hidden = { holder = healer, percent = U }
-        assert.equal("UNKNOWN", Aggro.NextThreat(true, { { holder = mage, percent = 50 }, hidden }).state)
-        -- a readable danger is still shown: it is true whatever the unreadable member has
-        assert.equal("DANGER", Aggro.NextThreat(true, { { holder = mage, percent = 95 }, hidden }).state)
+        local rows = Aggro.CurrentRows({ { holder = mage, percent = Aggro.UNREADABLE }, { holder = healer, percent = 5 },
+            { holder = me, percent = 50 } }, 2)
+        assert.equal(2, #rows)
+        assert.same({ me, healer }, { rows[1].holder, rows[2].holder })
+        assert.equal("UNKNOWN", Aggro.CurrentRows({ { holder = mage, percent = Aggro.UNREADABLE } }, 6)[1].state)
     end)
 end)
 

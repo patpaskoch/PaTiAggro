@@ -1,6 +1,6 @@
 -- PaTiAggro (the former PaTiTank, renamed 2026-10-14): aggro for every role. Display only; no secure frames.
--- Tank view: threat on your target (coloured by your threat status), who pulls next, enemies you lost.
--- Healer/Damage view: your highest threat over all enemies the group fights, and the enemies that attack you.
+-- Three sections: AGGRO TOTAL (tank: enemies you hold; healer/damage: your highest threat), AGGRO NOW (you and your
+-- group on your target, sorted) and AGGRO TEAM (tank: enemies that need you; healer/damage: enemies on you).
 -- The view follows the "My role" setting (Logic.EffectiveRole).
 local addonName, ns = ...
 local UI, L, Logic, Aggro, Threat, Plates = ns.UI, ns.UI.L, ns.Logic, ns.Aggro, ns.Threat, ns.Plates
@@ -10,11 +10,17 @@ local testMode = false
 local aggroEvents = {} -- event -> registered (see Events)
 
 local WIDTH, BAR_WIDTH, PAD, LINE = 280, 252, UI.Spacing.MD, 18
-local THREAT_HEIGHT = 16
--- Test mode, tank: you hold the target (100 %, green) and a damage dealer (TEST_PLAYER) is at 84 % of pulling
--- Healer/Damage: one enemy attacks you (red AGGRO).
-local TEST = { threat = 100, next = { holder = { role = "DAMAGER", hasName = true }, percent = 84, state = "WARNING" },
-    self = { state = "AGGRO", percent = 100, key = "TEST_ENEMY_3" } }
+local MEMBER_BAR = 14 -- height of one "AGGRO NOW" bar inside its LINE
+local SECTION_GAP = UI.Spacing.LG + UI.Spacing.MD -- clear space between the three sections (owner 2026-10-14)
+local MAX_CURRENT = 6 -- you, party1-4, pet
+
+-- Test mode. You (Brom) hold the test enemy, Lyra is at 84 % and Mira at 35 %. Names are looked up at paint time.
+local TEST_CURRENT = {
+    { holder = { nameKey = "TEST_TANK", role = "TANK" }, percent = 100, tanking = true, isPlayer = true },
+    { holder = { nameKey = "TEST_PLAYER", role = "DAMAGER" }, percent = 84 },
+    { holder = { nameKey = "TEST_HEALER", role = "HEALER" }, percent = 35 },
+}
+local TEST_SELF = { state = "WARNING", percent = 78 } -- healer/damage: your highest threat
 
 local function say(key, ...)
     print("|cff68caffPaTiAggro:|r " .. L[key]:format(...))
@@ -28,6 +34,10 @@ local function addonVersion()
 end
 
 -- Window ---------------------------------------------------------------------------------------
+-- Three sections, top to bottom (owner 2026-10-14), with clear space between them:
+--   AGGRO TOTAL  5 / 6          (healer/damage: your highest threat over all fought enemies)
+--   AGGRO NOW    <enemy name>   you and your group on your target, sorted: "Name (Role)" and a percent bar each
+--   AGGRO TEAM                  the enemies that need you (healer/damage: ON YOU — the enemies that attack you)
 
 local window = UI.CreateWindow("PaTiAggroFrame", "PaTiAggro", WIDTH, 120)
 window:SetCombatMovable(true) -- no secure children: may be dragged in combat too (PaTiShared)
@@ -35,172 +45,130 @@ local content = CreateFrame("Frame", nil, window) -- everything below the header
 content:SetPoint("TOPLEFT", 0, -UI.Sizes.HeaderHeight)
 content:SetPoint("BOTTOMRIGHT")
 
--- Threat bar at the top (owner 2026-10-14: no separate target line): the enemy's name on the left, your percent on
--- the right. The name may be secret (SetText only); the percent is written only when it is a readable number.
--- The bar colour follows the state (paintBarColor), so it is not a static UI.Paint colour.
--- Order top to bottom (owner 2026-10-14): "AGGRO TOTAL 5 / 6", the target bar, the "Next" bar, the enemy rows.
-local HEADER_TOP = UI.Spacing.SM
-local BAR_TOP = HEADER_TOP + LINE
-local barBackground = content:CreateTexture(nil, "BACKGROUND")
-barBackground:SetPoint("TOPLEFT", PAD, -BAR_TOP)
-barBackground:SetSize(BAR_WIDTH, THREAT_HEIGHT)
-UI.Paint(barBackground, "SetColorTexture", "Panel")
-local threat = CreateFrame("StatusBar", nil, content)
-threat:SetPoint("TOPLEFT", PAD, -BAR_TOP)
-threat:SetSize(BAR_WIDTH, THREAT_HEIGHT)
-threat:SetStatusBarTexture(UI.WHITE)
-threat:SetMinMaxValues(0, 100)
-local barPercent = threat:CreateFontString(nil, "OVERLAY", UI.Fonts.Text)
-barPercent:SetPoint("RIGHT", -UI.Spacing.SM, 0)
-barPercent:SetJustifyH("RIGHT")
-local barName = threat:CreateFontString(nil, "OVERLAY", UI.Fonts.Text)
-barName:SetPoint("LEFT", UI.Spacing.SM, 0)
-barName:SetPoint("RIGHT", barPercent, "LEFT", -UI.Spacing.SM, 0)
-barName:SetJustifyH("LEFT")
-barName:SetWordWrap(false)
-
-local SELF_COLOR = { GOOD = "Success", WARNING = "Warning", DANGER = "Danger", AGGRO = "Danger", UNKNOWN = "TextMuted" }
-local function paintBarColor(state) threat:SetStatusBarColor(UI.Color(SELF_COLOR[state] or "TextMuted")) end
-
--- One warning line under the bar, shown only when it matters (owner 2026-10-14): tank "Next: Mage 92 %" from 70 %,
--- healer/damage "You: about to pull" / "AGGRO on you!". Who and percent are two strings because a member name may be
--- secret (SetText only, never joined with other text).
-local NEXT_TOP = BAR_TOP + THREAT_HEIGHT + UI.Spacing.SM
-local nextLine = CreateFrame("Frame", nil, content)
-nextLine:SetPoint("TOPLEFT", PAD, -NEXT_TOP)
-nextLine:SetSize(BAR_WIDTH, LINE)
-nextLine:Hide()
-local nextLabel = nextLine:CreateFontString(nil, "OVERLAY", UI.Fonts.Muted)
-nextLabel:SetPoint("LEFT")
-UI.BindText(nextLabel, "NEXT")
-local nextPercent = nextLine:CreateFontString(nil, "OVERLAY", UI.Fonts.Text)
-nextPercent:SetPoint("RIGHT")
-nextPercent:SetJustifyH("RIGHT")
-local nextWho = nextLine:CreateFontString(nil, "OVERLAY", UI.Fonts.Text)
-nextWho:SetPoint("LEFT", nextLabel, "RIGHT", UI.Spacing.SM, 0)
-nextWho:SetPoint("RIGHT", nextPercent, "LEFT", -UI.Spacing.SM, 0)
-nextWho:SetJustifyH("LEFT")
-nextWho:SetWordWrap(false)
-
--- Tank: "Next" as a small bar (owner 2026-10-14) — the player's name left, how far they are to pulling right
--- (100 % = they take it). Healer/damage keep the text (nextWho) in the same line.
-local NEXT_BAR_HEIGHT = 12
-local nextBar = CreateFrame("StatusBar", nil, nextLine)
-nextBar:SetPoint("LEFT", nextLabel, "RIGHT", UI.Spacing.SM, 0)
-nextBar:SetPoint("RIGHT")
-nextBar:SetHeight(NEXT_BAR_HEIGHT)
-nextBar:SetStatusBarTexture(UI.WHITE)
-nextBar:SetMinMaxValues(0, 100)
-local nextBarBackground = nextBar:CreateTexture(nil, "BACKGROUND")
-nextBarBackground:SetAllPoints()
-UI.Paint(nextBarBackground, "SetColorTexture", "Panel")
-local nextBarPercent = nextBar:CreateFontString(nil, "OVERLAY", UI.Fonts.Muted)
-nextBarPercent:SetPoint("RIGHT", -UI.Spacing.XS, 0)
-nextBarPercent:SetJustifyH("RIGHT")
-local nextBarName = nextBar:CreateFontString(nil, "OVERLAY", UI.Fonts.Muted)
-nextBarName:SetPoint("LEFT", UI.Spacing.XS, 0)
-nextBarName:SetPoint("RIGHT", nextBarPercent, "LEFT", -UI.Spacing.XS, 0)
-nextBarName:SetJustifyH("LEFT")
-nextBarName:SetWordWrap(false)
-
-local function showNextBar(bar)
-    nextBar:SetShown(bar)
-    nextWho:SetShown(not bar)
-    nextPercent:SetShown(not bar)
+-- A section: a title on the left and a value on the right; its rows hang below the title line.
+local function newSection(titleKey)
+    local section = CreateFrame("Frame", nil, content)
+    section:SetHeight(LINE)
+    section.title = section:CreateFontString(nil, "OVERLAY", UI.Fonts.Label)
+    section.title:SetPoint("TOPLEFT", PAD, -2)
+    UI.BindText(section.title, titleKey)
+    section.value = section:CreateFontString(nil, "OVERLAY", UI.Fonts.Text)
+    section.value:SetPoint("TOPRIGHT", -PAD, -2)
+    section.value:SetPoint("LEFT", section.title, "RIGHT", UI.Spacing.SM, 0)
+    section.value:SetJustifyH("RIGHT")
+    section.value:SetWordWrap(false)
+    return section
 end
 
--- Header "AGGRO TOTAL 2 / 2" at the top; under the bars up to Aggro.MAX_ROWS enemies you do not (safely) hold. The rows
--- move up when the "Next" line is hidden (placeBlock).
-local block = CreateFrame("Frame", nil, content)
-block:SetHeight(1)
-local BLOCK_TOP = { line = NEXT_TOP + LINE + UI.Spacing.XS, noLine = BAR_TOP + THREAT_HEIGHT + UI.Spacing.SM }
-local aggroLabel = content:CreateFontString(nil, "OVERLAY", UI.Fonts.Label)
-aggroLabel:SetPoint("TOPLEFT", PAD, -HEADER_TOP - 2)
-UI.BindText(aggroLabel, "AGGRO_TOTAL")
-local aggroSummary = content:CreateFontString(nil, "OVERLAY", UI.Fonts.Text)
-aggroSummary:SetPoint("TOPRIGHT", -PAD, -HEADER_TOP - 2)
-aggroSummary:SetJustifyH("RIGHT")
+local total = newSection("AGGRO_TOTAL")
+local now = newSection("AGGRO_NOW")
+local team = newSection("AGGRO_TEAM")
 
-local HOLDER_WIDTH, NUMBER_WIDTH = 96, 12
+-- "Name (Role)" in two strings: a member name may be secret (SetText only, never joined with other text).
+local function newMemberText(parent, font)
+    local name = parent:CreateFontString(nil, "OVERLAY", font)
+    name:SetJustifyH("LEFT")
+    name:SetWordWrap(false)
+    local tag = parent:CreateFontString(nil, "OVERLAY", UI.Fonts.Muted)
+    tag:SetPoint("LEFT", name, "RIGHT", UI.Spacing.XS, 0)
+    tag:SetJustifyH("LEFT")
+    tag:SetWordWrap(false)
+    return name, tag
+end
+
+-- AGGRO NOW rows: one bar per member — "Name (Role)" left, percent (or "has aggro") right.
+local NAME_WIDTH = 110
+local members = {}
+for index = 1, MAX_CURRENT do
+    local bar = CreateFrame("StatusBar", nil, now)
+    bar:SetPoint("TOPLEFT", PAD, -index * LINE - (LINE - MEMBER_BAR) / 2)
+    bar:SetSize(BAR_WIDTH, MEMBER_BAR)
+    bar:SetStatusBarTexture(UI.WHITE)
+    bar:SetMinMaxValues(0, 100)
+    local background = bar:CreateTexture(nil, "BACKGROUND")
+    background:SetAllPoints()
+    UI.Paint(background, "SetColorTexture", "Panel")
+    local value = bar:CreateFontString(nil, "OVERLAY", UI.Fonts.Text)
+    value:SetPoint("RIGHT", -UI.Spacing.SM, 0)
+    value:SetJustifyH("RIGHT")
+    local name, tag = newMemberText(bar, UI.Fonts.Text)
+    name:SetPoint("LEFT", UI.Spacing.SM, 0)
+    name:SetWidth(NAME_WIDTH)
+    name:SetJustifyH("LEFT")
+    tag:ClearAllPoints()
+    tag:SetPoint("LEFT", UI.Spacing.SM + NAME_WIDTH + UI.Spacing.XS, 0)
+    tag:SetPoint("RIGHT", value, "LEFT", -UI.Spacing.XS, 0)
+    members[index] = { bar = bar, name = name, tag = tag, value = value }
+end
+
+-- AGGRO TEAM rows: marker, number (also above the enemy's nameplate), enemy name, "Name (Role)" of who has it.
+local HOLDER_WIDTH, TAG_WIDTH, NUMBER_WIDTH = 64, 58, 12
 local STATE_COLOR = { LOST = "Danger", DANGER = "Warning", UNKNOWN = "TextMuted" }
 local rows = {}
 for index = 1, Aggro.MAX_ROWS do
-    local top = (index - 1) * LINE
-    local marker = block:CreateTexture(nil, "ARTWORK")
+    local top = index * LINE
+    local marker = team:CreateTexture(nil, "ARTWORK")
     marker:SetPoint("TOPLEFT", PAD, -top - 3)
     marker:SetSize(3, LINE - 6)
-    local holder = block:CreateFontString(nil, "OVERLAY", UI.Fonts.Text)
-    holder:SetPoint("TOPRIGHT", -PAD, -top - 2)
+    local holderTag = team:CreateFontString(nil, "OVERLAY", UI.Fonts.Muted)
+    holderTag:SetPoint("TOPRIGHT", -PAD, -top - 2)
+    holderTag:SetWidth(TAG_WIDTH)
+    holderTag:SetJustifyH("LEFT")
+    holderTag:SetWordWrap(false)
+    local holder = team:CreateFontString(nil, "OVERLAY", UI.Fonts.Text)
+    holder:SetPoint("TOPRIGHT", holderTag, "TOPLEFT", -UI.Spacing.XS, 0)
     holder:SetWidth(HOLDER_WIDTH)
     holder:SetJustifyH("RIGHT")
     holder:SetWordWrap(false)
     -- The number that also stands above this enemy's nameplate (empty: no plate that can be named safely).
-    local number = block:CreateFontString(nil, "OVERLAY", UI.Fonts.Title)
+    local number = team:CreateFontString(nil, "OVERLAY", UI.Fonts.Title)
     number:SetPoint("TOPLEFT", PAD + 3 + UI.Spacing.SM, -top - 1)
     number:SetWidth(NUMBER_WIDTH)
     number:SetJustifyH("LEFT")
-    local name = block:CreateFontString(nil, "OVERLAY", UI.Fonts.Text)
+    local name = team:CreateFontString(nil, "OVERLAY", UI.Fonts.Text)
     name:SetPoint("TOPLEFT", PAD + 3 + UI.Spacing.SM + NUMBER_WIDTH + UI.Spacing.XS, -top - 2)
     name:SetPoint("RIGHT", holder, "LEFT", -UI.Spacing.SM, 0)
     name:SetJustifyH("LEFT")
     name:SetWordWrap(false)
-    rows[index] = { marker = marker, number = number, name = name, holder = holder }
+    rows[index] = { marker = marker, number = number, name = name, holder = holder, holderTag = holderTag }
 end
 
-local function blockTop() return nextLine:IsShown() and BLOCK_TOP.line or BLOCK_TOP.noLine end
-local function placeBlock()
-    block:ClearAllPoints()
-    block:SetPoint("TOPLEFT", content, "TOPLEFT", 0, -blockTop())
-    block:SetPoint("TOPRIGHT", content, "TOPRIGHT", 0, -blockTop())
-end
-placeBlock()
-local shownRows = 0
+local shownMembers, shownRows = 0, 0
 local lastNumbers = {} -- readable GUID -> row number of the last paint (Aggro.Number keeps numbers stable)
 local rowUnit = {}     -- row index -> nameplate token its number belongs to (cleared on plate events)
 
--- Paint (threat values may be secret: they only reach the StatusBar widget) ------------------------------
-
--- A group member: role first, then name (may be secret: only handed to SetText), else "other player".
-local function memberText(holder)
-    local label = Aggro.HolderLabel(holder)
-    if label == "NAME" then return holder.name end
-    return L[label] or L.OTHER_PLAYER
+-- Sections stack with SECTION_GAP between them; AGGRO NOW and AGGRO TEAM grow with their rows. Returns the height.
+local function placeSections()
+    local top = UI.Spacing.SM
+    for _, entry in ipairs({ { total, 0 }, { now, shownMembers }, { team, shownRows } }) do
+        local section, count = entry[1], entry[2]
+        section:ClearAllPoints()
+        section:SetPoint("TOPLEFT", content, "TOPLEFT", 0, -top)
+        section:SetPoint("TOPRIGHT", content, "TOPRIGHT", 0, -top)
+        top = top + LINE + count * LINE + SECTION_GAP
+    end
+    return top - SECTION_GAP
 end
 
-local applyLayout -- defined below; the warning line changes the window height
+-- Paint (threat values may be secret: they only reach widgets) ----------------------------------------
 
--- Show or hide the warning line; the aggro block moves with it.
-local function setLine(shown)
-    if nextLine:IsShown() == shown then return end
-    nextLine:SetShown(shown)
-    placeBlock()
-    if DB then applyLayout() end
+-- "(Role)" for a member (owner 2026-10-14): the role when WoW assigned one, else the class when it is readable.
+local function tagOf(holder)
+    local roleKey = holder.role and ("ROLE_" .. holder.role)
+    if roleKey and L[roleKey] then return "(" .. L[roleKey] .. ")" end
+    if not isSecret(holder.class) and type(holder.class) == "string" then return "(" .. holder.class .. ")" end
+    return ""
 end
 
--- Bar text: name may be secret (SetText only); percent only as a readable number, else nothing.
-local function paintBarText(name, percent)
-    barName:SetText(name or "")
-    barPercent:SetText(type(percent) == "number" and ("%d %%"):format(percent) or "")
-end
-
-local NEXT_COLOR = { WARNING = "Warning", DANGER = "Danger" }
-
--- The member's own name first (owner 2026-10-14: show the character who pulls), else the role.
-local function playerText(holder)
-    if holder and holder.hasName then return holder.name end
-    return memberText(holder)
-end
-
--- Tank: "Next [Lyra ███ 92 %]" only from NEXT_WARN on — a calm or unreadable next member is no news.
-local function paintNext(info)
-    local color = info and NEXT_COLOR[info.state]
-    setLine(color ~= nil)
-    if not color then return end
-    showNextBar(true)
-    nextBar:SetValue(math.min(100, info.percent))
-    nextBar:SetStatusBarColor(UI.Color(color))
-    nextBarName:SetText(playerText(info.holder))
-    nextBarPercent:SetText(("%d %%"):format(info.percent))
+-- "Name (Role)"; without a name the role alone stands in the name string. The name only goes to SetText.
+local function paintMember(nameString, tagString, holder)
+    if holder and (holder.nameKey or holder.hasName) then
+        nameString:SetText(holder.nameKey and L[holder.nameKey] or holder.name)
+        tagString:SetText(tagOf(holder))
+    else
+        nameString:SetText(L[Aggro.HolderLabel(holder)] or L.OTHER_PLAYER)
+        tagString:SetText("")
+    end
 end
 
 -- The view of the last paint; nil until the first one. Labels change with it, numbers start fresh.
@@ -210,94 +178,62 @@ local function updateRole()
     local new = Logic.EffectiveRole(DB.myRole, Threat.PlayerRole())
     if new == role then return end
     role = new
-    local tank = role == "TANK"
-    UI.BindText(nextLabel, tank and "NEXT" or "SELF_STATE")
-    UI.BindText(aggroLabel, tank and "AGGRO_TOTAL" or "ON_YOU")
+    UI.BindText(team.title, role == "TANK" and "AGGRO_TEAM" or "ON_YOU")
     lastNumbers = {}
 end
 
--- Tank: the bar is your target — its name, your percent, the colour by your threat status.
-local function paintTarget()
-    if role ~= "TANK" then return end -- healer/damage: the bar comes from the scan (paintSelf)
+-- Colour of an AGGRO NOW bar. Who has the aggro: green when that is right (you as tank, or the tank when you are
+-- not), red when it is wrong. Everyone else by how close they are to pulling (70 / 90 %).
+local CURRENT_COLOR = { GOOD = "TextMuted", WARNING = "Warning", DANGER = "Danger", UNKNOWN = "TextMuted" }
+local function memberColor(row)
+    if row.state ~= "HOLDS" then return CURRENT_COLOR[row.state] end
+    local rightHolder
+    if role == "TANK" then rightHolder = row.isPlayer else rightHolder = not row.isPlayer end
+    return rightHolder and "Success" or "Danger"
+end
+
+local applyLayout -- defined below; the sections change the window height
+
+-- AGGRO NOW: you and your group on your target.
+local function paintNow()
+    local list
     if testMode then
-        threat:SetValue(TEST.threat)
-        paintBarText(L.TEST_TARGET, TEST.threat)
-        paintBarColor("GOOD")
-        TEST.next.holder.name = L.TEST_PLAYER -- looked up at paint time (language)
-        paintNext(TEST.next)
+        list = TEST_CURRENT
+        now.value:SetText(L.TEST_TARGET)
     elseif UnitExists("target") then
-        local _, _, percent = UnitDetailedThreatSituation("player", "target")
-        threat:SetValue(Logic.ThreatValue(percent, isSecret))
-        local status, own = Threat.Self("target")
-        local mine = Aggro.SelfThreat("TANK", status, own)
-        -- Not attacked yet: no threat list, so no values — that is 0 % for an enemy (owner 2026-10-14), never a guess.
-        local shown = mine and mine.percent
-        if status == nil and own == nil and Threat.ZeroThreat("target") then shown = 0 end
-        paintBarText(UnitName("target"), shown)
-        paintBarColor(mine and mine.state)
-        paintNext(Aggro.NextThreat(Threat.Next("target")))
+        list = Threat.Current("target")
+        now.value:SetText(UnitName("target")) -- may be secret: SetText only
     else
-        threat:SetValue(0)
-        paintBarText(nil, nil)
-        paintBarColor(nil)
-        paintNext(nil)
+        list = {}
+        now.value:SetText(L.AGGRO_NONE)
+    end
+    local current = Aggro.CurrentRows(list, MAX_CURRENT)
+    for index, member in ipairs(members) do
+        local row = current[index]
+        member.bar:SetShown(row ~= nil)
+        if row then
+            paintMember(member.name, member.tag, row.holder)
+            member.bar:SetValue(row.state == "HOLDS" and 100 or math.min(100, row.percent or 0))
+            member.bar:SetStatusBarColor(UI.Color(memberColor(row)))
+            local value = row.percent and ("%d %%"):format(row.percent) or L.AGGRO_UNKNOWN
+            member.value:SetText(row.state == "HOLDS" and L.HAS_AGGRO or value)
+        end
+    end
+    if #current ~= shownMembers then
+        shownMembers = #current
+        if DB then applyLayout() end
     end
 end
 
--- Healer/Damage warning line: only when it matters.
-local SELF_TEXT = { DANGER = "SELF_DANGER", AGGRO = "SELF_AGGRO" }
-
--- Healer/Damage: the bar is the enemy you are closest to pulling (or that attacks you) — the worst of your threat on
--- the target and on every enemy the group fights (Aggro.SelfWorst).
-local function paintSelf(enemies)
-    local info = TEST.self
-    if not testMode then
-        local results = {}
-        local function add(name, status, percent)
-            local result = Aggro.SelfThreat(role, status, percent)
-            if result then
-                result.name = name
-                results[#results + 1] = result
-            end
-        end
-        if UnitExists("target") then add(UnitName("target"), Threat.Self("target")) end
-        for _, enemy in ipairs(enemies) do add(enemy.name, enemy.playerStatus, enemy.playerPercent) end
-        info = Aggro.SelfWorst(results)
-    end
-    if not info then
-        threat:SetValue(0)
-        setLine(false)
-        -- No threat anywhere yet: an enemy target shows 0 % (owner 2026-10-14); nothing else to show without one.
-        if not testMode and Threat.ZeroThreat("target") then
-            paintBarText(UnitName("target"), 0)
-            paintBarColor("GOOD")
-        else
-            paintBarText(nil, nil)
-            paintBarColor(nil)
-        end
-        return
-    end
-    threat:SetValue(info.state == "AGGRO" and 100 or math.min(100, info.percent or 0))
-    paintBarText(info.key and L[info.key] or info.name, info.percent)
-    paintBarColor(info.state)
-    local text = SELF_TEXT[info.state]
-    setLine(text ~= nil)
-    if not text then return end
-    local color = SELF_COLOR[info.state]
-    showNextBar(false)
-    nextWho:SetText(L[text])
-    nextWho:SetTextColor(UI.Color(color))
-    nextPercent:SetText("")
-end
-
--- Test mode: 6 enemies, 4 held, 1 barely held, 1 on the healer. Names are looked up at paint time (language).
+-- Test mode, tank: 6 enemies, 4 held, 1 slipping to Lyra, 1 on the healer Mira.
 -- Fake tokens/GUIDs only feed the numbering; test mode never draws on real nameplates.
 local TEST_ENEMIES = {
     { key = "TEST_ENEMY_1", state = "CONTROLLED" }, { key = "TEST_ENEMY_2", state = "CONTROLLED" },
-    { key = "TEST_ENEMY_3", state = "LOST", holder = { role = "HEALER" }, unit = "nameplate3", guid = "TEST-3" },
+    { key = "TEST_ENEMY_3", state = "LOST", holder = { nameKey = "TEST_HEALER", role = "HEALER" },
+        unit = "nameplate3", guid = "TEST-3" },
     { key = "TEST_ENEMY_4", state = "CONTROLLED" },
-    { key = "TEST_ENEMY_5", state = "DANGER", challenger = { role = "DAMAGER" }, unit = "nameplate5",
-        guid = "TEST-5" },
+    { key = "TEST_ENEMY_5", state = "DANGER", challenger = { nameKey = "TEST_PLAYER", role = "DAMAGER" },
+        unit = "nameplate5", guid = "TEST-5" },
     { key = "TEST_ENEMY_6", state = "CONTROLLED" },
 }
 
@@ -307,13 +243,27 @@ local TEST_ON_YOU = {
     { key = "TEST_ENEMY_1", playerStatus = 0 },
 }
 
-local function holderText(enemy)
-    if enemy.onYou then return L.YOU end
-    if enemy.state == "DANGER" then -- yellow: you still hold it, this member is about to take it
-        return enemy.challenger and memberText(enemy.challenger) or L.AGGRO_DANGER
+-- Right side of an AGGRO TEAM row: who has it (red), who is about to take it (yellow), or a state word.
+local function paintHolder(row, enemy)
+    local word = (enemy.onYou and L.YOU) or (enemy.state == "UNKNOWN" and L.AGGRO_UNKNOWN)
+        or (enemy.state == "DANGER" and not enemy.challenger and L.AGGRO_DANGER) or nil
+    if word then
+        row.holder:SetText(word)
+        row.holderTag:SetText("")
+    else
+        paintMember(row.holder, row.holderTag, enemy.state == "DANGER" and enemy.challenger or enemy.holder)
     end
+end
+
+-- Plain text for an alert in PaTiAlerts (a secret name cannot be sent as text): role, else readable name.
+local function alertDetail(enemy)
     if enemy.state == "UNKNOWN" then return L.AGGRO_UNKNOWN end
-    return memberText(enemy.holder)
+    local member = enemy.state == "DANGER" and enemy.challenger or enemy.holder
+    if enemy.state == "DANGER" and not member then return L.AGGRO_DANGER end
+    local label = Aggro.HolderLabel(member)
+    if label ~= "NAME" then return L[label] or L.OTHER_PLAYER end
+    if isSecret(member.name) then return L.OTHER_PLAYER end
+    return member.name
 end
 
 local alertsError -- last error PaTiAlerts raised in Sync (diagnostics only, /paggro debug)
@@ -331,18 +281,42 @@ local function scanning()
     return not DB.collapsed or alertsApi() ~= nil
 end
 
--- Plain text for the right side of an alert (a secret holder name cannot be sent as text).
-local function alertDetail(enemy)
-    local text = holderText(enemy)
-    if isSecret(text) then return L.OTHER_PLAYER end
-    return text
-end
-
 applyLayout = function()
     content:SetShown(not DB.collapsed)
-    window:SetHeight(DB.collapsed and UI.Sizes.HeaderHeight
-        or UI.Sizes.HeaderHeight + blockTop() + shownRows * LINE + PAD)
+    local height = placeSections()
+    window:SetHeight(DB.collapsed and UI.Sizes.HeaderHeight or UI.Sizes.HeaderHeight + height + PAD)
     window:SetTestMode(testMode)
+end
+
+local SELF_COLOR = { GOOD = "Text", WARNING = "Warning", DANGER = "Danger", AGGRO = "Danger", UNKNOWN = "TextMuted" }
+
+-- AGGRO TOTAL, healer/damage: your highest threat over your target and every enemy the group fights — healing
+-- threat lands on all of them (Aggro.SelfWorst). "AGGRO on you!" as soon as one attacks you.
+local function paintSelfTotal(enemies)
+    local info = TEST_SELF
+    if not testMode then
+        local results = {}
+        local function add(status, percent)
+            local result = Aggro.SelfThreat(role, status, percent)
+            if result then results[#results + 1] = result end
+        end
+        if UnitExists("target") then add(Threat.Self("target")) end
+        for _, enemy in ipairs(enemies) do add(enemy.playerStatus, enemy.playerPercent) end
+        info = Aggro.SelfWorst(results)
+    end
+    if not info then
+        total.value:SetText(L.AGGRO_NONE)
+        total.value:SetTextColor(UI.Color("Text"))
+        return
+    end
+    if info.state == "AGGRO" then
+        total.value:SetText(L.SELF_AGGRO)
+    elseif info.state == "UNKNOWN" or not info.percent then
+        total.value:SetText(L.AGGRO_UNKNOWN)
+    else
+        total.value:SetText(("%d %%"):format(info.percent))
+    end
+    total.value:SetTextColor(UI.Color(SELF_COLOR[info.state]))
 end
 
 local function paintAggro()
@@ -353,7 +327,7 @@ local function paintAggro()
     if tank then
         summary = Aggro.Summarize(enemies)
     else
-        paintSelf(enemies)
+        paintSelfTotal(enemies)
         summary = { rows = Aggro.OnYou(enemies) }
     end
     local count = math.min(#summary.rows, Aggro.MAX_ROWS)
@@ -374,7 +348,7 @@ local function paintAggro()
     end
     Plates.Update(marks, marking and not testMode)
     -- PaTiAlerts: the same rows with the same numbers; test mode sends nothing (its enemies are not real). The
-    -- healer/damage view sends nothing yet: PaTiAlerts has no "attacks you" alert kind (FOLLOW_UPS).
+    -- healer/damage view sends nothing yet: PaTiAlerts has no "attacks you" alert kind (FOLLOW_UPS F35).
     local api = alertsApi()
     if api then
         local alerts = {}
@@ -385,18 +359,14 @@ local function paintAggro()
         if not ok then alertsError = tostring(err):sub(1, 120) end -- /paggro debug only; PaTiAggro keeps running
     end
     if not tank then
-        aggroSummary:SetText(tostring(#summary.rows))
-        aggroSummary:SetTextColor(UI.Color(count == 0 and "Text" or "Danger"))
+        team.value:SetText(tostring(#summary.rows))
+        team.value:SetTextColor(UI.Color(count == 0 and "Text" or "Danger"))
     else
-        if summary.total == 0 then
-            aggroSummary:SetText(L.AGGRO_NONE)
-        elseif #summary.rows > Aggro.MAX_ROWS then
-            aggroSummary:SetText(L.AGGRO_CONTROLLED:format(summary.held, summary.total) .. "  "
-                .. L.AGGRO_MORE:format(#summary.rows - Aggro.MAX_ROWS))
-        else
-            aggroSummary:SetText(L.AGGRO_CONTROLLED:format(summary.held, summary.total))
-        end
-        aggroSummary:SetTextColor(UI.Color(summary.held < summary.total and "Warning" or "Text"))
+        total.value:SetText(summary.total == 0 and L.AGGRO_NONE
+            or L.AGGRO_CONTROLLED:format(summary.held, summary.total))
+        total.value:SetTextColor(UI.Color(summary.held < summary.total and "Warning" or "Text"))
+        team.value:SetText(#summary.rows > Aggro.MAX_ROWS and L.AGGRO_MORE:format(#summary.rows - Aggro.MAX_ROWS) or "")
+        team.value:SetTextColor(UI.Color("TextMuted"))
     end
     for index, row in ipairs(rows) do
         local enemy = summary.rows[index]
@@ -405,6 +375,7 @@ local function paintAggro()
         row.number:SetShown(shown)
         row.name:SetShown(shown)
         row.holder:SetShown(shown)
+        row.holderTag:SetShown(shown)
         if shown then
             local color = STATE_COLOR[enemy.state]
             row.marker:SetColorTexture(UI.Color(color))
@@ -412,7 +383,7 @@ local function paintAggro()
             row.number:SetTextColor(UI.Color(color))
             local name = enemy.key and L[enemy.key] or enemy.name
             if isSecret(name) or name ~= nil then row.name:SetText(name) else row.name:SetText(L.UNKNOWN_ENEMY) end
-            row.holder:SetText(holderText(enemy))
+            paintHolder(row, enemy)
             row.holder:SetTextColor(UI.Color(color))
         end
     end
@@ -437,7 +408,7 @@ end
 local function paintAll()
     if not DB then return end
     updateRole()
-    paintTarget()
+    paintNow()
     paintAggro()
 end
 
@@ -643,12 +614,12 @@ events:SetScript("OnEvent", function(_, event, unit)
     elseif event == "UNIT_TARGET" then
         if PARTY[unit] then requestScan() end -- fires for every unit (nameplates too); only party targets matter
     elseif event == "GROUP_ROSTER_UPDATE" or event == "PLAYER_ROLES_ASSIGNED" then
-        paintAll() -- the view follows your group role (AUTO); the "Next" line reads the group
+        paintAll() -- the view follows your group role (AUTO); AGGRO NOW reads the group
         requestScan()
     elseif event == "PLAYER_REGEN_DISABLED" or event == "PLAYER_REGEN_ENABLED" then
         requestScan()
     else -- target changed or threat changed
-        paintTarget()
+        paintNow()
         requestScan()
     end
 end)

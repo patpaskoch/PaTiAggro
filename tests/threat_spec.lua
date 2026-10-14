@@ -105,9 +105,10 @@ describe("Threat.Scan", function()
     end)
 end)
 
-describe("Threat.Next", function()
+describe("Threat.Current", function()
     local function withDetailed(units, detail) -- detail[unit] = { tanking, percent }
         local ns = setup(units)
+        _G.UnitClass = function(unit) return units[unit].class end
         _G.UnitDetailedThreatSituation = function(unit)
             local entry = detail[unit]
             if not entry then return nil end
@@ -116,32 +117,35 @@ describe("Threat.Next", function()
         return ns
     end
 
-    it("reads whether you tank and every member on the threat list", function()
-        local ns = withDetailed({ player = {}, party1 = { name = "Heila", role = "HEALER" }, party2 = { name = "Mage" } },
+    it("lists you and every member on the threat list, with role and class", function()
+        local ns = withDetailed({ player = { name = "Brom" }, target = { enemy = true },
+            party1 = { name = "Heila", role = "HEALER", class = "Priester" }, party2 = { name = "Mage" } },
             { player = { true, 100 }, party1 = { false, 81 } })
-        local tanking, others = ns.Threat.Next("target")
-        assert.is_true(tanking)
-        assert.equal(1, #others) -- party2 is not on the threat list
-        assert.equal("HEALER", others[1].holder.role)
-        assert.equal(81, others[1].percent)
+        local list = ns.Threat.Current("target")
+        assert.equal(2, #list) -- party2 is not on the threat list
+        assert.is_true(list[1].isPlayer)
+        assert.is_true(list[1].tanking)
+        assert.equal("HEALER", list[2].holder.role)
+        assert.equal("Priester", list[2].holder.class)
+        assert.equal(81, list[2].percent)
     end)
 
-    it("turns secret values and API errors into UNREADABLE", function()
-        local ns = withDetailed({ player = {}, party1 = { name = "A" } }, { player = { SECRET, 100 }, party1 = { false, SECRET } })
-        local tanking, others = ns.Threat.Next("target")
-        assert.equal(ns.Aggro.UNREADABLE, tanking)
-        assert.equal(ns.Aggro.UNREADABLE, others[1].percent)
-        _G.UnitDetailedThreatSituation = function() error("boom") end
-        tanking = ns.Threat.Next("target")
-        assert.equal(ns.Aggro.UNREADABLE, tanking)
+    it("shows you with 0 % on an enemy nobody attacked yet, but not on a friendly target", function()
+        local ns = withDetailed({ player = { name = "Brom" }, target = { enemy = true } }, {})
+        local list = ns.Threat.Current("target")
+        assert.equal(1, #list)
+        assert.equal(0, list[1].percent)
+        ns = withDetailed({ player = { name = "Brom" }, target = { enemy = false } }, {})
+        assert.same({}, ns.Threat.Current("target"))
     end)
 
-    it("shows nothing without the API", function()
-        local ns = withDetailed({ player = {} }, {})
+    it("turns secret values and API errors into UNREADABLE, and knows nothing without the API", function()
+        local ns = withDetailed({ player = {}, target = { enemy = true }, party1 = { name = "A" } },
+            { player = { SECRET, 100 }, party1 = { false, SECRET } })
+        local list = ns.Threat.Current("target")
+        assert.equal(ns.Aggro.UNREADABLE, list[2].percent)
         _G.UnitDetailedThreatSituation = nil
-        local tanking, others = ns.Threat.Next("target")
-        assert.is_false(tanking)
-        assert.same({}, others)
+        assert.same({}, ns.Threat.Current("target"))
     end)
 end)
 

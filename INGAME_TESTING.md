@@ -68,14 +68,19 @@ Regeln und Eintragen von Ergebnissen: [PaTiAdmin/docs/TESTING.md](https://github
   sich an; `/pt test` ebenso
   - 🔧 FIX IMPLEMENTED 2026-10-10 (Owner: kein Lebensbalken im Tank-Addon)
   - MANUAL RETEST REQUIRED
+  - Owner 2026-10-14: Anzeige zu voll („Ziel: kein Ziel ausgewählt“ doppelt) → Ziel-Zeile entfernt, siehe PT-AGGRO-017
+  - 🔧 FIX IMPLEMENTED 2026-10-14
+  - MANUAL RETEST REQUIRED
 - [ ] PT-TANK-051 Aktuelles Ziel wird angezeigt und wechselt mit
 - [ ] PT-TANK-052 Eigene Bedrohung auf dem Ziel wird angezeigt
 - [ ] PT-TANK-114 Zeile „Nächster:“ in der Gruppe: wer am nächsten am Aggro-Ziehen ist (Rolle oder Name) mit Prozent;
-  weiß unter 70 %, gelb ab 70 %, rot ab 90 %; bei 100 % zieht dieser Spieler wirklich
+  erscheint nur ab 70 % (gelb), rot ab 90 %; unter 70 % keine Zeile; bei 100 % zieht dieser Spieler wirklich
   - 🔧 FIX IMPLEMENTED 2026-10-11 (Owner-Wunsch: vorher sehen, wer gleich Aggro zieht)
   - MANUAL RETEST REQUIRED
-- [ ] PT-TANK-115 „Nächster: —“ ohne Ziel, solo, oder wenn du das Ziel nicht tankst; `/pt test` zeigt „Schaden 84 %“ gelb
+  - 🔧 FIX IMPLEMENTED 2026-10-14 (Owner: Zeile nur, wenn es wichtig ist)
   - MANUAL RETEST REQUIRED
+- ~~PT-TANK-115 „Nächster: —“ ohne Ziel, solo, oder wenn du das Ziel nicht tankst; `/pt test` zeigt „Schaden 84 %“ gelb~~
+  - RETIRED 2026-10-14 – die Zeile „Nächster“ erscheint nur noch ab 70 % (Owner), ersetzt durch PT-AGGRO-018
 - [ ] PT-TANK-116 Begleiter (Jägerpet/Wichtel) wird als „Begleiter“ berücksichtigt; im Kampf kein Lua-Fehler, Werte
   aktualisieren sich laufend (nicht „unklar“ hängen bleiben)
   - MANUAL RETEST REQUIRED
@@ -135,6 +140,8 @@ Panel-Zeilen sind nicht klickbar (technisch blockiert, F17) und werden nicht get
 
 - [ ] PT-AGGRO-001 Alter Ordner `PaTiTank` gelöscht, `PaTiAggro` installiert: Addon heißt in der AddOn-Liste PaTiAggro,
   mit Beschreibung und Icon; Login ohne Lua-Fehler
+  - Owner 2026-10-14: „heißt PaTiAggro … sonst funktioniert es eigentlich“ (Name bestätigt; Beschreibung, Icon,
+    Lua-Fehler nicht einzeln genannt)
   - MANUAL RETEST REQUIRED
 - [ ] PT-AGGRO-002 `/paggro`, `/patiaggro` und `/pt` öffnen/schließen das Fenster; `/paggro debug` zeigt die Zeile „Role:“
   - MANUAL RETEST REQUIRED
@@ -164,4 +171,16 @@ Panel-Zeilen sind nicht klickbar (technisch blockiert, F17) und werden nicht get
   - MANUAL RETEST REQUIRED
 - [ ] PT-AGGRO-016 `/paggro test` mit Rolle Heiler oder Schaden: „AGGRO auf dir!“ und eine Zeile Ghul → dich;
   mit Rolle Tank die bisherige Testansicht (Balken grün 100 %, „Nächster: Schaden 84 %“)
+  - MANUAL RETEST REQUIRED
+
+## Anzeige (vereinfacht 2026-10-14)
+
+- [ ] PT-AGGRO-017 Keine Zeile „Ziel:“ mehr; ganz oben der Balken: links der Name des Gegners, rechts deine Prozent;
+  ohne Ziel (Tank) ist der Balken leer, ohne Text; Farbe Tank: grün/gelb/rot nach Status
+  - MANUAL RETEST REQUIRED
+- [ ] PT-AGGRO-018 Die Warnzeile unter dem Balken erscheint nur, wenn es wichtig ist (Tank: „Nächster“ ab 70 %;
+  Heiler/Schaden: „ziehst gleich“ ab 90 % oder „AGGRO auf dir!“); sonst rückt der Aggro-Block nach oben, keine Lücke
+  - MANUAL RETEST REQUIRED
+- [ ] PT-AGGRO-019 Aggro-Block kurz: links „AGGRO“, rechts nur „2 / 2“ (ohne „unter Kontrolle“); Heiler/Schaden:
+  „AUF DIR“ und rechts die Anzahl
   - MANUAL RETEST REQUIRED

@@ -163,7 +163,7 @@ local SELF_RANK = { GOOD = 1, WARNING = 2, UNKNOWN = 3, DANGER = 4, AGGRO = 5 }
 
 -- The worst of your SelfThreat results over several enemies (healer/damage: every enemy the group fights, since
 -- healing threat lands on all of them, not only on a target). Ties: the higher percent. Returns nil for an empty list,
--- else that result plus .onYou = how many of them attack you (AGGRO).
+-- else that result (with its .name, if the caller set one) plus .onYou = how many of them attack you (AGGRO).
 function Aggro.SelfWorst(results)
     local worst, onYou = nil, 0
     for _, result in ipairs(results) do
@@ -172,7 +172,7 @@ function Aggro.SelfWorst(results)
         if rank > best or (rank == best and (result.percent or 0) > (worst.percent or 0)) then worst = result end
     end
     if not worst then return nil end
-    return { state = worst.state, percent = worst.percent, onYou = onYou }
+    return { state = worst.state, percent = worst.percent, name = worst.name, onYou = onYou }
 end
 
 -- Healer/Damage rows: the enemies that attack you (your status 2/3), shown red like a lost enemy. Copies — the

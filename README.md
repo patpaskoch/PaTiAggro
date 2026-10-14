@@ -48,20 +48,20 @@ Klappt etwas nicht? Schreib einfach, bei welchem Schritt du hängst — am beste
   one it shows the tank view. Never guessed from your class.
 
 **Tank view**
-- Your target and your threat on it. The bar colour comes from your threat status, not the percent (while you tank,
-  WoW reports 100 % for you): green = you hold it, yellow = you hold it but someone has more threat, red = someone
-  else has it
-- **Next:** the group member closest to pulling your target, e.g. `Next: Mage 92 %` — white below 70 %, yellow from
-  70 %, red from 90 % (100 % = they pull it). Only while you tank the target; unreadable values show "unclear"
-- **Aggro control:** `AGGRO 5 / 6 under control` plus up to four rows for enemies that need you:
+- **Threat bar:** your target's name on the left, your threat percent on the right. The colour comes from your threat
+  status, not the percent (while you tank, WoW reports 100 % for you): green = you hold it, yellow = you hold it but
+  someone has more threat, red = someone else has it. No target: an empty bar
+- **Next:** appears under the bar only when it matters — the group member closest to pulling your target from 70 %
+  (yellow), red from 90 % (100 % = they pull it), e.g. `Next: Mage 92 %`
+- **Aggro:** `AGGRO 5 / 6` plus up to four rows for enemies that need you:
   red = lost, with who has it (role, else name, else "other player"), yellow = barely held, grey = unclear.
-  Unreadable data is shown as "unclear", never as "under control"
+  Unreadable data is shown as "unclear", never as held
 - With **PaTiAlerts** installed (optional), the lost and barely held rows also appear there, with the same number
 
 **Healer / damage view**
-- **Your threat (highest):** the highest of your threat on your target and on every enemy your group fights (healing
-  threat lands on all of them). `You: calm` below 70 %, `rising` from 70 %, `about to pull` from 90 % — and
-  `AGGRO on you!` (red, full bar) as soon as an enemy attacks you
+- **Threat bar:** the enemy you are closest to pulling, over your target and every enemy your group fights (healing
+  threat lands on all of them) — its name left, your percent right; green below 70 %, yellow from 70 %, red from 90 %.
+  Under the bar only when it matters: `You: about to pull` (from 90 %) or `AGGRO on you!` (red, full bar)
 - **ON YOU:** up to four rows for the enemies that attack you, numbered on their nameplates like in the tank view
 
 **Both views**

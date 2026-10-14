@@ -38,6 +38,10 @@ History before this file: `git log`.
   Test mode shows 6 enemies: 4 held, 1 barely held, 1 on the healer. `/pt debug` shows which aggro APIs exist.
 - Tests for the collapsed state (default, migration keeps a saved value, restore defaults expands).
 ### Changed
+- Simpler display (owner 2026-10-14): no "Target:" line any more — the threat bar is at the top with the enemy's
+  name on the left and your percent on the right. The warning line ("Next" for tanks, "about to pull" / "AGGRO on
+  you!" for healer/damage) appears only when it matters; otherwise the aggro block moves up. The aggro header reads
+  just `AGGRO 5 / 6` (no "under control"); healer/damage: `ON YOU 1`.
 - **Renamed PaTiTank → PaTiAggro** (owner 2026-10-14, architecture audit variant C): aggro for every role, not only
   tanks. New folder, TOC and SavedVariables (`PaTiAggroDB`): the old PaTiTank settings (position, size, language,
   theme, opacity, numbers, collapse, lock) are not carried over — delete the old `PaTiTank` folder. Commands

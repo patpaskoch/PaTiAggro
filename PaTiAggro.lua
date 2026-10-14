@@ -208,7 +208,7 @@ end
 local role
 
 local function updateRole()
-    local new = Logic.EffectiveRole(DB.myRole, Threat.PlayerRole())
+    local new = Logic.EffectiveRole(DB.myRole, Threat.PlayerRole(), Threat.OtherTank())
     if new == role then return end
     role = new
     UI.BindText(team.title, role == "TANK" and "AGGRO_TEAM" or "ON_YOU")
@@ -570,8 +570,8 @@ local function printDebug()
         ("Aggro: UnitThreatSituation %s · nameplate events %s · party target events %s"):format(
             UnitThreatSituation and "yes" or "no", aggroEventsOk("NAME_PLATE_UNIT_ADDED", "NAME_PLATE_UNIT_REMOVED"),
             aggroEventsOk("UNIT_TARGET")),
-        ("Role: setting %s · group role %s · view %s"):format(tostring(DB.myRole),
-            tostring(Threat.PlayerRole() or "none"), tostring(role)),
+        ("Role: setting %s · group role %s · other tank %s · view %s"):format(tostring(DB.myRole),
+            tostring(Threat.PlayerRole() or "none"), tostring(Threat.OtherTank()), tostring(role)),
         ("Last caught errors: threat API %s · PaTiAlerts %s"):format(Threat.lastError or "none",
             alertsError or "none"),
     }) do print("  " .. line) end

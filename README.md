@@ -38,14 +38,16 @@ WoW starten → in der Charakterauswahl unten links **AddOns** → Haken bei **P
 
 Im Chat **`/paggro test`** eingeben: Jetzt siehst du das Fenster mit Beispiel-Gegnern. Nochmal `/paggro test` beendet die Vorschau.
 
-Heiler oder Schaden? `/paggro settings` → **Meine Rolle** wählen (Auto nimmt die Gruppenrolle).
+Heiler oder Schaden? `/paggro settings` → **Meine Rolle** wählen. Auto nimmt die Gruppenrolle – ohne vergebene Rollen
+zeigt es sonst die Tank-Ansicht („0 / 5“).
 
 Klappt etwas nicht? Schreib einfach, bei welchem Schritt du hängst — am besten mit einem Screenshot.
 
 
 ## Features
 - **My role** (Settings): Auto, Tank, Healer or Damage. Auto uses the role WoW reports for you in the group; without
-  one it shows the tank view. Never guessed from your class.
+  one, but with another member assigned as tank, it shows your own threat; without any role it shows the tank view.
+  Never guessed from your class — as healer or damage without group roles, set "My role" once (saved per character).
 
 The window has three sections, top to bottom, with clear space between them:
 

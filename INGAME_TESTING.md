@@ -90,6 +90,8 @@ Regeln und Eintragen von Ergebnissen: [PaTiAdmin/docs/TESTING.md](https://github
 
 - [ ] PT-TANK-060 Pull mit 3+ Gegnern: „x / y unter Kontrolle“ stimmt
   - Owner 2026-10-14 (Gruppe): unsicher, ob die Anzahl bei AGGRO GESAMT gestimmt hat — bitte gezielt erneut prüfen
+  - Owner 2026-10-14 (Instanz, als Heiler): „0 / 5“ hat nicht funktioniert → als Heiler lief die Tank-Ansicht (vermutlich Auto
+    ohne eigene WoW-Rolle); Korrektur siehe PT-AGGRO-029
 - [ ] PT-TANK-061 Verlorener Gegner (LOST): rote Zeile mit Halter
 - [ ] PT-TANK-062 Knapp gehaltener Gegner (DANGER): gelbe Zeile
 - [ ] PT-TANK-063 Nicht lesbare Daten (UNKNOWN): graue Zeile „unklar“, nie „unter Kontrolle“
@@ -237,5 +239,11 @@ Panel-Zeilen sind nicht klickbar (technisch blockiert, F17) und werden nicht get
   etwas kleiner; über AGGRO TEAM mehr Abstand, unten weniger. „(Tank)“, „(Heiler)“ usw. und der Gegnername hellgrau
   wie „PaTiAggro“ oben links
   - Owner 2026-10-14: nur Aktives anzeigen, kleiner, Abstände, hellere Schrift → umgesetzt
+  - 🔧 FIX IMPLEMENTED 2026-10-14
+  - MANUAL RETEST REQUIRED
+- [ ] PT-AGGRO-029 Als Heiler oder DD mit „Meine Rolle: Auto“ in einer Gruppe, in der nur der Tank eine WoW-Rolle hat:
+  keine „x / y“-Anzeige, sondern dein eigener Wert (z. B. „35 %“) und „AUF DIR“; `/paggro debug` zeigt „other tank
+  true · view DAMAGER“. Ganz ohne Rollen: Tank-Ansicht, mit „Meine Rolle: Heiler“ dein eigener Wert
+  - Owner 2026-10-14: „0 / 5“ als Heiler → Korrektur
   - 🔧 FIX IMPLEMENTED 2026-10-14
   - MANUAL RETEST REQUIRED

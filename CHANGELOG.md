@@ -4,6 +4,10 @@ Format: `## [Unreleased]` / `## [x.y.z] - YYYY-MM-DD` with Added, Changed, Fixed
 History before this file: `git log`.
 
 ## [Unreleased]
+### Fixed
+- A healer or damage dealer without an own WoW role saw the tank view ("0 / 5", owner 2026-10-14): with "My role" =
+  Auto, another member assigned as tank now means you are not the tank → your own threat. Without any role the tank
+  view stays (never guessed from the class); set "My role" once per character. `/paggro debug` shows "other tank".
 ### Added
 - "My role" setting: Auto (group role, else tank — never guessed from the class), Tank, Healer, Damage.
 - Healer/damage view: "Your threat (highest)" over your target and every enemy your group fights, with

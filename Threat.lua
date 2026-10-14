@@ -181,3 +181,11 @@ end
 function Threat.ZeroThreat(unit)
     return UnitDetailedThreatSituation ~= nil and isEnemy(unit)
 end
+
+-- Another group member has the WoW role Tank (pets and you excluded); unreadable roles count as no tank.
+function Threat.OtherTank()
+    for _, member in ipairs(GROUP) do
+        if member ~= "pet" and flag(UnitExists(member)) == true and role(member) == "TANK" then return true end
+    end
+    return false
+end

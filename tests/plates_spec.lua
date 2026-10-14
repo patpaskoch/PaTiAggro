@@ -1,4 +1,4 @@
--- PaTiTank nameplate numbers with mocked plates. Run via PaTiAdmin/tools/check.sh. Frames are plain tables here;
+-- PaTiAggro nameplate numbers with mocked plates. Run via PaTiAdmin/tools/check.sh. Frames are plain tables here;
 -- whether WoW draws them on real nameplates is a manual test.
 local wow = require("wow_api")
 

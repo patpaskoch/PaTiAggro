@@ -1,4 +1,4 @@
--- PaTiTank threat adapter with mocked WoW APIs. Run via PaTiAdmin/tools/check.sh.
+-- PaTiAggro threat adapter with mocked WoW APIs. Run via PaTiAdmin/tools/check.sh.
 local wow = require("wow_api")
 
 local SECRET = setmetatable({}, { __lt = function() error("secret compared") end, __le = function() error("secret compared") end })
@@ -142,5 +142,35 @@ describe("Threat.Next", function()
         local tanking, others = ns.Threat.Next("target")
         assert.is_false(tanking)
         assert.same({}, others)
+    end)
+end)
+
+describe("Threat.Self and PlayerRole", function()
+    it("reads your status and percent, secret values become UNREADABLE", function()
+        local ns = setup({ player = { role = "HEALER" } })
+        _G.UnitDetailedThreatSituation = function() return false, 1, 75 end
+        local status, percent = ns.Threat.Self("target")
+        assert.equal(1, status)
+        assert.equal(75, percent)
+        _G.UnitDetailedThreatSituation = function() return false, SECRET, SECRET end
+        status, percent = ns.Threat.Self("target")
+        assert.equal(ns.Aggro.UNREADABLE, status)
+        assert.equal(ns.Aggro.UNREADABLE, percent)
+        assert.equal("HEALER", ns.Threat.PlayerRole())
+    end)
+
+    it("knows nothing without the API and no role without one", function()
+        local ns = setup({ player = {} })
+        _G.UnitDetailedThreatSituation = nil
+        assert.is_nil((ns.Threat.Self("target")))
+        assert.is_nil(ns.Threat.PlayerRole())
+    end)
+
+    it("adds your percent to every scanned enemy", function()
+        local ns = setup({ player = {}, party1 = { name = "T", role = "TANK" },
+            nameplate1 = { enemy = true, guid = "G1", name = "A" } }, { nameplate1 = { player = 1, party1 = 3 } })
+        _G.UnitDetailedThreatSituation = function(unit) if unit == "player" then return false, 1, 64 end end
+        ns.Threat.PlateAdded("nameplate1")
+        assert.equal(64, ns.Threat.Scan()[1].playerPercent)
     end)
 end)

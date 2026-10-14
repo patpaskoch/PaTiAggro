@@ -1,10 +1,12 @@
--- PaTiTank: saved settings and value normalisation, no WoW API calls (tested in tests/logic_spec.lua).
+-- PaTiAggro: saved settings and value normalisation, no WoW API calls (tested in tests/logic_spec.lua).
 local _, ns = ...
 local Logic = {}
 ns.Logic = Logic
 
 Logic.SCHEMA = 1
 Logic.SCALES = { 0.8, 0.9, 1, 1.1, 1.25, 1.5 }
+Logic.ROLES = { "AUTO", "TANK", "HEALER", "DAMAGER" } -- the "My role" setting, in menu order
+Logic.ROLE_SET = { AUTO = true, TANK = true, HEALER = true, DAMAGER = true }
 
 Logic.DEFAULTS = {
     opacity = 0.75, -- panel body opacity (PaTiShared window; 0.3–1)
@@ -14,6 +16,7 @@ Logic.DEFAULTS = {
     scale = 1,
     language = "auto",
     markPlates = true, -- "!" above the nameplate of a lost / barely held enemy (Plates.lua)
+    myRole = "AUTO", -- AUTO | TANK | HEALER | DAMAGER: which view (owner 2026-10-14); AUTO = the group role, else TANK
 }
 
 -- 0.1.0 saved x, y (CENTER offsets) and locked; they are kept as they are, so the window stays where it was
@@ -27,6 +30,7 @@ function Logic.Migrate(db)
     if type(db.scale) ~= "number" or db.scale < 0.5 or db.scale > 2 then db.scale = Logic.DEFAULTS.scale end
     -- Theme: one of the three PaTiShared themes; a typo or an old value falls back to the default look.
     if db.theme ~= "default" and db.theme ~= "woforever" and db.theme ~= "dracula" then db.theme = "default" end
+    if not Logic.ROLE_SET[db.myRole] then db.myRole = "AUTO" end
     db.schema = Logic.SCHEMA
     return db
 end
@@ -43,4 +47,12 @@ function Logic.ThreatValue(percent, isSecret)
     if isSecret(percent) then return percent end
     if type(percent) ~= "number" then return 0 end
     return math.max(0, math.min(100, percent))
+end
+
+-- The view to show: the chosen role, or with AUTO the role WoW reports for you in the group (already checked for
+-- secrecy; nil without one). Without any role the tank view stays (owner 2026-10-14: never guessed from the class).
+function Logic.EffectiveRole(setting, assigned)
+    if setting ~= "AUTO" and Logic.ROLE_SET[setting] then return setting end
+    if assigned == "TANK" or assigned == "HEALER" or assigned == "DAMAGER" then return assigned end
+    return "TANK"
 end

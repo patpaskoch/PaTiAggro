@@ -5,6 +5,10 @@ History before this file: `git log`.
 
 ## [Unreleased]
 ### Added
+- "My role" setting: Auto (group role, else tank — never guessed from the class), Tank, Healer, Damage.
+- Healer/damage view: "Your threat (highest)" over your target and every enemy your group fights, with
+  `You: calm / rising (70 %) / about to pull (90 %) / AGGRO on you!`, and an "ON YOU" block listing the enemies that
+  attack you, numbered on their nameplates. Unreadable values show "unclear", never "calm". Test mode follows the role.
 - "Next" line under the threat bar (owner 2026-10-11): the group member (or pet) closest to pulling your target,
   with role or name and percent — yellow from 70 %, red from 90 % (WoW's scaled threat: 100 % = pulls, melee/ranged
   rule included). Only while you tank the target; "—" otherwise, "unclear" when a value cannot be read. Test mode: a
@@ -34,6 +38,13 @@ History before this file: `git log`.
   Test mode shows 6 enemies: 4 held, 1 barely held, 1 on the healer. `/pt debug` shows which aggro APIs exist.
 - Tests for the collapsed state (default, migration keeps a saved value, restore defaults expands).
 ### Changed
+- **Renamed PaTiTank → PaTiAggro** (owner 2026-10-14, architecture audit variant C): aggro for every role, not only
+  tanks. New folder, TOC and SavedVariables (`PaTiAggroDB`): the old PaTiTank settings (position, size, language,
+  theme, opacity, numbers, collapse, lock) are not carried over — delete the old `PaTiTank` folder. Commands
+  `/paggro`, `/patiaggro`; `/pt` still works for now. GitHub: patpaskoch/PaTiAggro (the old link forwards).
+  PaTiAlerts lists the alerts under the source PaTiAggro.
+- Tank: the threat bar colour now follows your threat status (green you hold it, yellow someone has more threat,
+  red someone else has it) instead of a fixed red — the percent cannot warn a tank (always 100 % while tanking).
 - Diagnostics (hardening 2026-10-02): errors that are caught so the addon keeps running are no longer silent — the debug command shows the last caught error per source (no chat spam, nothing saved).
 - The window can also be moved in combat (it has no secure buttons; PaTiShared `SetCombatMovable`, hardening 2026-10-02). A broken saved position falls back to the default instead of breaking the login.
 - AddOns list description in English with a German translation (`## Notes-deDE`); README rewritten for players
@@ -53,6 +64,7 @@ History before this file: `git log`.
   move up.
 - `PaTiSharedPanel.lua` (legacy shared panel global).
 ### Known Issues
+- The healer/damage view sends nothing to PaTiAlerts yet (no "attacks you" alert kind there).
 - Not tested in game yet (threat values, layout, secret values in combat, the whole aggro monitor).
 - Aggro: enemies without a visible nameplate that nobody in your group targets are not seen. Clicking a row does
   not target the enemy (technically blocked, PaTiAdmin FOLLOW_UPS F17); click the numbered nameplate instead.

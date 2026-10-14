@@ -1,4 +1,4 @@
--- PaTiTank aggro control rules. Run via PaTiAdmin/tools/check.sh.
+-- PaTiAggro aggro control rules. Run via PaTiAdmin/tools/check.sh.
 local wow = require("wow_api")
 
 local function load()
@@ -163,5 +163,66 @@ describe("Aggro.NextThreat", function()
         assert.equal("UNKNOWN", Aggro.NextThreat(true, { { holder = mage, percent = 50 }, hidden }).state)
         -- a readable danger is still shown: it is true whatever the unreadable member has
         assert.equal("DANGER", Aggro.NextThreat(true, { { holder = mage, percent = 95 }, hidden }).state)
+    end)
+end)
+
+describe("Aggro.SelfThreat", function()
+    it("colours the tank by status, never by percent", function()
+        local Aggro = load()
+        assert.equal("GOOD", Aggro.SelfThreat("TANK", 3, 100).state)
+        assert.equal("WARNING", Aggro.SelfThreat("TANK", 2, 100).state)
+        assert.equal("DANGER", Aggro.SelfThreat("TANK", 0, 80).state)
+        assert.is_nil(Aggro.SelfThreat("TANK", nil, nil))
+    end)
+
+    it("warns healer and damage by percent and flags real aggro", function()
+        local Aggro = load()
+        assert.equal("GOOD", Aggro.SelfThreat("HEALER", 0, 69).state)
+        assert.equal("WARNING", Aggro.SelfThreat("DAMAGER", 1, 70).state)
+        assert.equal("DANGER", Aggro.SelfThreat("DAMAGER", 1, 89.6).state)
+        assert.equal(90, Aggro.SelfThreat("DAMAGER", 1, 89.6).percent)
+        assert.equal("AGGRO", Aggro.SelfThreat("HEALER", 3, 100).state)
+        assert.equal("AGGRO", Aggro.SelfThreat("HEALER", 2, 100).state)
+        assert.is_nil(Aggro.SelfThreat("HEALER", nil, nil))
+    end)
+
+    it("never turns unreadable values into GOOD", function()
+        local Aggro = load()
+        assert.equal("UNKNOWN", Aggro.SelfThreat("TANK", Aggro.UNREADABLE, 100).state)
+        assert.equal("UNKNOWN", Aggro.SelfThreat("HEALER", 0, Aggro.UNREADABLE).state)
+    end)
+end)
+
+describe("Aggro.SelfWorst", function()
+    it("picks the worst state, then the higher percent, and counts enemies on you", function()
+        local Aggro = load()
+        local worst = Aggro.SelfWorst({ { state = "GOOD", percent = 20 }, { state = "WARNING", percent = 71 },
+            { state = "WARNING", percent = 85 } })
+        assert.equal("WARNING", worst.state)
+        assert.equal(85, worst.percent)
+        worst = Aggro.SelfWorst({ { state = "AGGRO" }, { state = "DANGER", percent = 95 }, { state = "AGGRO" } })
+        assert.equal("AGGRO", worst.state)
+        assert.equal(2, worst.onYou)
+        assert.is_nil(Aggro.SelfWorst({}))
+    end)
+
+    it("lets an unreadable enemy beat WARNING but not a readable DANGER", function()
+        local Aggro = load()
+        assert.equal("UNKNOWN", Aggro.SelfWorst({ { state = "WARNING", percent = 80 }, { state = "UNKNOWN" } }).state)
+        assert.equal("DANGER", Aggro.SelfWorst({ { state = "DANGER", percent = 92 }, { state = "UNKNOWN" } }).state)
+    end)
+end)
+
+describe("Aggro.OnYou", function()
+    it("lists the enemies that attack you as red rows, leaving the scan untouched", function()
+        local Aggro = load()
+        local enemies = { { name = "A", playerStatus = 3, state = "CONTROLLED" }, { name = "B", playerStatus = 0 },
+            { name = "C", playerStatus = 2, state = "DANGER" } }
+        local rows = Aggro.OnYou(enemies)
+        assert.equal(2, #rows)
+        assert.equal("A", rows[1].name)
+        assert.equal("LOST", rows[1].state)
+        assert.is_true(rows[2].onYou)
+        assert.equal("CONTROLLED", enemies[1].state)
     end)
 end)

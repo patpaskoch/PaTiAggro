@@ -1,5 +1,7 @@
--- PaTiTank: current target, your threat on it and the aggro monitor. Display only; no secure frames. No own
--- health bar since 2026-10-10 (owner: the tank addon is about threat and aggro only).
+-- PaTiAggro (the former PaTiTank, renamed 2026-10-14): aggro for every role. Display only; no secure frames.
+-- Tank view: threat on your target (coloured by your threat status), who pulls next, enemies you lost.
+-- Healer/Damage view: your highest threat over all enemies the group fights, and the enemies that attack you.
+-- The view follows the "My role" setting (Logic.EffectiveRole).
 local addonName, ns = ...
 local UI, L, Logic, Aggro, Threat, Plates = ns.UI, ns.UI.L, ns.Logic, ns.Aggro, ns.Threat, ns.Plates
 
@@ -9,11 +11,13 @@ local aggroEvents = {} -- event -> registered (see Events)
 
 local WIDTH, BAR_WIDTH, PAD, LINE = 280, 252, UI.Spacing.MD, 18
 local THREAT_HEIGHT = 16
--- Test mode: your threat in percent, and a damage dealer at 84 % of pulling (yellow "Next" line).
-local TEST = { threat = 72, next = { holder = { role = "DAMAGER" }, percent = 84, state = "WARNING" } }
+-- Test mode, tank: you hold the target (100 %, green) and a damage dealer is at 84 % of pulling (yellow "Next" line).
+-- Healer/Damage: one enemy attacks you (red AGGRO).
+local TEST = { threat = 100, next = { holder = { role = "DAMAGER" }, percent = 84, state = "WARNING" },
+    self = { state = "AGGRO", percent = 100 } }
 
 local function say(key, ...)
-    print("|cff68caffPaTiTank:|r " .. L[key]:format(...))
+    print("|cff68caffPaTiAggro:|r " .. L[key]:format(...))
 end
 
 local function isSecret(value) return issecretvalue ~= nil and issecretvalue(value) == true end
@@ -25,7 +29,7 @@ end
 
 -- Window ---------------------------------------------------------------------------------------
 
-local window = UI.CreateWindow("PaTiTankFrame", "PaTiTank", WIDTH, 120)
+local window = UI.CreateWindow("PaTiAggroFrame", "PaTiAggro", WIDTH, 120)
 window:SetCombatMovable(true) -- no secure children: may be dragged in combat too (PaTiShared)
 local content = CreateFrame("Frame", nil, window) -- everything below the header; hidden when collapsed
 content:SetPoint("TOPLEFT", 0, -UI.Sizes.HeaderHeight)
@@ -41,7 +45,8 @@ targetName:SetPoint("RIGHT", content, "RIGHT", -PAD, 0)
 targetName:SetJustifyH("LEFT")
 targetName:SetWordWrap(false)
 
-local function makeBar(top, height, color, labelKey)
+-- The bar colour follows the state (paintBarColor), so it is not a static UI.Paint colour.
+local function makeBar(top, height, labelKey)
     local background = content:CreateTexture(nil, "BACKGROUND")
     background:SetPoint("TOPLEFT", PAD, -top)
     background:SetSize(BAR_WIDTH, height)
@@ -50,16 +55,18 @@ local function makeBar(top, height, color, labelKey)
     bar:SetPoint("TOPLEFT", PAD, -top)
     bar:SetSize(BAR_WIDTH, height)
     bar:SetStatusBarTexture(UI.WHITE)
-    UI.Paint(bar, "SetStatusBarColor", color)
     local label = bar:CreateFontString(nil, "OVERLAY", UI.Fonts.Text)
     label:SetPoint("CENTER")
     UI.BindText(label, labelKey)
-    return bar
+    return bar, label
 end
 
 local threatTop = UI.Spacing.SM + LINE + UI.Spacing.SM
-local threat = makeBar(threatTop, THREAT_HEIGHT, "Danger", "THREAT")
+local threat, threatLabel = makeBar(threatTop, THREAT_HEIGHT, "THREAT")
 threat:SetMinMaxValues(0, 100)
+
+local SELF_COLOR = { GOOD = "Success", WARNING = "Warning", DANGER = "Danger", AGGRO = "Danger", UNKNOWN = "TextMuted" }
+local function paintBarColor(state) threat:SetStatusBarColor(UI.Color(SELF_COLOR[state] or "TextMuted")) end
 
 -- "Next: Mage 92 %" — the group member closest to pulling your target (Aggro.NextThreat). Who and percent are two
 -- strings because a member name may be secret (SetText only, never joined with other text).
@@ -141,21 +148,77 @@ local function paintNext(info)
     nextPercent:SetTextColor(UI.Color(color))
 end
 
+-- The view of the last paint; nil until the first one. Labels change with it, numbers start fresh.
+local role
+
+local function updateRole()
+    local new = Logic.EffectiveRole(DB.myRole, Threat.PlayerRole())
+    if new == role then return end
+    role = new
+    local tank = role == "TANK"
+    UI.BindText(threatLabel, tank and "THREAT" or "SELF_THREAT")
+    UI.BindText(nextLabel, tank and "NEXT" or "SELF_STATE")
+    UI.BindText(aggroLabel, tank and "AGGRO" or "ON_YOU")
+    lastNumbers = {}
+end
+
 local function paintTarget()
     if testMode then
         targetName:SetText(L.TEST_TARGET)
-        threat:SetValue(TEST.threat)
-        paintNext(TEST.next)
     elseif UnitExists("target") then
         targetName:SetText(UnitName("target"))
-        local _, _, percent = UnitDetailedThreatSituation("player", "target")
-        threat:SetValue(Logic.ThreatValue(percent, isSecret))
-        paintNext(Aggro.NextThreat(Threat.Next("target")))
     else
         targetName:SetText(L.NO_TARGET)
+    end
+    if role ~= "TANK" then return end -- healer/damage: bar and state line come from the scan (paintSelf)
+    if testMode then
+        threat:SetValue(TEST.threat)
+        paintBarColor("GOOD")
+        paintNext(TEST.next)
+    elseif UnitExists("target") then
+        local _, _, percent = UnitDetailedThreatSituation("player", "target")
+        threat:SetValue(Logic.ThreatValue(percent, isSecret))
+        local mine = Aggro.SelfThreat("TANK", Threat.Self("target"))
+        paintBarColor(mine and mine.state)
+        paintNext(Aggro.NextThreat(Threat.Next("target")))
+    else
         threat:SetValue(0)
+        paintBarColor(nil)
         paintNext(nil)
     end
+end
+
+local SELF_TEXT = { GOOD = "SELF_GOOD", WARNING = "SELF_WARNING", DANGER = "SELF_DANGER", AGGRO = "SELF_AGGRO",
+    UNKNOWN = "AGGRO_UNKNOWN" }
+
+-- Healer/Damage: the worst of your threat on the target and on every enemy the group fights (Aggro.SelfWorst).
+local function paintSelf(enemies)
+    local info = TEST.self
+    if not testMode then
+        local results = {}
+        local function add(status, percent)
+            local result = Aggro.SelfThreat(role, status, percent)
+            if result then results[#results + 1] = result end
+        end
+        if UnitExists("target") then add(Threat.Self("target")) end
+        for _, enemy in ipairs(enemies) do add(enemy.playerStatus, enemy.playerPercent) end
+        info = Aggro.SelfWorst(results)
+    end
+    if not info then
+        threat:SetValue(0)
+        paintBarColor("GOOD")
+        nextWho:SetText(L.NEXT_NONE)
+        nextWho:SetTextColor(UI.Color("TextMuted"))
+        nextPercent:SetText("")
+        return
+    end
+    local color = SELF_COLOR[info.state]
+    threat:SetValue(info.state == "AGGRO" and 100 or math.min(100, info.percent or 0))
+    paintBarColor(info.state)
+    nextWho:SetText(L[SELF_TEXT[info.state]])
+    nextWho:SetTextColor(UI.Color(color))
+    nextPercent:SetText(info.percent and info.state ~= "AGGRO" and ("%d %%"):format(info.percent) or "")
+    nextPercent:SetTextColor(UI.Color(color))
 end
 
 -- Test mode: 6 enemies, 4 held, 1 barely held, 1 on the healer. Names are looked up at paint time (language).
@@ -168,16 +231,23 @@ local TEST_ENEMIES = {
     { key = "TEST_ENEMY_6", state = "CONTROLLED" },
 }
 
+-- Healer/Damage test: one enemy attacks you.
+local TEST_ON_YOU = {
+    { key = "TEST_ENEMY_3", playerStatus = 3, unit = "nameplate3", guid = "TEST-3" },
+    { key = "TEST_ENEMY_1", playerStatus = 0 },
+}
+
 local function holderText(enemy)
+    if enemy.onYou then return L.YOU end
     if enemy.state == "DANGER" then return L.AGGRO_DANGER end
     if enemy.state == "UNKNOWN" then return L.AGGRO_UNKNOWN end
     return memberText(enemy.holder)
 end
 
-local alertsError -- last error PaTiAlerts raised in Sync (diagnostics only, /pt debug)
+local alertsError -- last error PaTiAlerts raised in Sync (diagnostics only, /paggro debug)
 
 -- PaTiAlerts is optional (AGENTS.md §3): report only if it is installed with API version 1, never depend on it.
--- pcall: a problem in PaTiAlerts must never break PaTiTank.
+-- pcall: a problem in PaTiAlerts must never break PaTiAggro.
 local function alertsApi()
     local api = _G.PaTiAlertsAPI
     if type(api) == "table" and api.version == 1 and type(api.Sync) == "function" then return api end
@@ -203,8 +273,16 @@ local function applyLayout()
 end
 
 local function paintAggro()
-    local enemies = testMode and TEST_ENEMIES or Threat.Scan()
-    local summary = Aggro.Summarize(enemies)
+    local tank = role == "TANK"
+    local enemies
+    if testMode then enemies = tank and TEST_ENEMIES or TEST_ON_YOU else enemies = Threat.Scan() end
+    local summary
+    if tank then
+        summary = Aggro.Summarize(enemies)
+    else
+        paintSelf(enemies)
+        summary = { rows = Aggro.OnYou(enemies) }
+    end
     local count = math.min(#summary.rows, Aggro.MAX_ROWS)
     local visible = {}
     for index = 1, count do visible[index] = summary.rows[index] end
@@ -222,22 +300,31 @@ local function paintAggro()
         end
     end
     Plates.Update(marks, marking and not testMode)
-    -- PaTiAlerts: the same rows with the same numbers; test mode sends nothing (its enemies are not real).
+    -- PaTiAlerts: the same rows with the same numbers; test mode sends nothing (its enemies are not real). The
+    -- healer/damage view sends nothing yet: PaTiAlerts has no "attacks you" alert kind (FOLLOW_UPS).
     local api = alertsApi()
     if api then
-        local alerts = testMode and {} or Aggro.Alerts(visible, numbers, alertDetail, L.UNKNOWN_ENEMY, isSecret)
-        local ok, err = pcall(api.Sync, "PaTiTank", alerts)
-        if not ok then alertsError = tostring(err):sub(1, 120) end -- /pt debug only; PaTiTank keeps running
+        local alerts = {}
+        if tank and not testMode then
+            alerts = Aggro.Alerts(visible, numbers, alertDetail, L.UNKNOWN_ENEMY, isSecret)
+        end
+        local ok, err = pcall(api.Sync, "PaTiAggro", alerts)
+        if not ok then alertsError = tostring(err):sub(1, 120) end -- /paggro debug only; PaTiAggro keeps running
     end
-    if summary.total == 0 then
-        aggroSummary:SetText(L.AGGRO_NONE)
-    elseif #summary.rows > Aggro.MAX_ROWS then
-        aggroSummary:SetText(L.AGGRO_CONTROLLED:format(summary.held, summary.total) .. "  "
-            .. L.AGGRO_MORE:format(#summary.rows - Aggro.MAX_ROWS))
+    if not tank then
+        aggroSummary:SetText(count == 0 and L.ON_YOU_NONE or L.ON_YOU_COUNT:format(#summary.rows))
+        aggroSummary:SetTextColor(UI.Color(count == 0 and "Text" or "Danger"))
     else
-        aggroSummary:SetText(L.AGGRO_CONTROLLED:format(summary.held, summary.total))
+        if summary.total == 0 then
+            aggroSummary:SetText(L.AGGRO_NONE)
+        elseif #summary.rows > Aggro.MAX_ROWS then
+            aggroSummary:SetText(L.AGGRO_CONTROLLED:format(summary.held, summary.total) .. "  "
+                .. L.AGGRO_MORE:format(#summary.rows - Aggro.MAX_ROWS))
+        else
+            aggroSummary:SetText(L.AGGRO_CONTROLLED:format(summary.held, summary.total))
+        end
+        aggroSummary:SetTextColor(UI.Color(summary.held < summary.total and "Warning" or "Text"))
     end
-    aggroSummary:SetTextColor(UI.Color(summary.held < summary.total and "Warning" or "Text"))
     for index, row in ipairs(rows) do
         local enemy = summary.rows[index]
         local shown = index <= count
@@ -276,6 +363,7 @@ end
 
 local function paintAll()
     if not DB then return end
+    updateRole()
     paintTarget()
     paintAggro()
 end
@@ -311,13 +399,20 @@ end)
 local modal
 
 local function buildSettings()
-    modal = UI.CreateModal("PaTiTankSettings", function() return "PaTiTank " .. L.SETTINGS end, 380)
+    modal = UI.CreateModal("PaTiAggroSettings", function() return "PaTiAggro " .. L.SETTINGS end, 380)
     local scales = {}
     for _, scale in ipairs(Logic.SCALES) do
         scales[#scales + 1] = { value = scale, text = function() return ("%d %%"):format(scale * 100 + 0.5) end }
     end
     modal:AddSection("GENERAL")
     modal:AddRow("LANGUAGE", UI.CreateLanguageDropdown(modal, DB, 170))
+    local roles = {}
+    for _, value in ipairs(Logic.ROLES) do roles[#roles + 1] = { value = value, text = "ROLE_" .. value } end
+    modal:AddRow("MY_ROLE", UI.CreateDropdown(modal, 170, {
+        items = function() return roles end,
+        get = function() return DB.myRole end,
+        set = function(value) DB.myRole = value; paintAll() end,
+    }))
     modal:AddRow("SCALE", UI.CreateDropdown(modal, 170, {
         items = function() return scales end,
         get = function() return DB.scale end,
@@ -385,7 +480,7 @@ end
 
 local function printDebug()
     local version, build, _, interface = GetBuildInfo()
-    print("|cff68caffPaTiTank Debug:|r")
+    print("|cff68caffPaTiAggro Debug:|r")
     for _, line in ipairs({
         ("Addon %s %s · PaTiShared UI %s"):format(addonName, addonVersion(), tostring(UI.VERSION)),
         ("WoW %s (build %s, interface %s) · locale %s · UI language %s"):format(tostring(version), tostring(build),
@@ -396,6 +491,8 @@ local function printDebug()
         ("Aggro: UnitThreatSituation %s · nameplate events %s · party target events %s"):format(
             UnitThreatSituation and "yes" or "no", aggroEventsOk("NAME_PLATE_UNIT_ADDED", "NAME_PLATE_UNIT_REMOVED"),
             aggroEventsOk("UNIT_TARGET")),
+        ("Role: setting %s · group role %s · view %s"):format(tostring(DB.myRole),
+            tostring(Threat.PlayerRole() or "none"), tostring(role)),
         ("Last caught errors: threat API %s · PaTiAlerts %s"):format(Threat.lastError or "none",
             alertsError or "none"),
     }) do print("  " .. line) end
@@ -414,9 +511,10 @@ local COMMANDS = {
     version = function() say("VERSION", addonVersion()) end,
 }
 
-SLASH_PATITANK1 = "/patitank"
-SLASH_PATITANK2 = "/pt"
-SlashCmdList.PATITANK = function(message)
+SLASH_PATIAGGRO1 = "/paggro"
+SLASH_PATIAGGRO2 = "/patiaggro"
+SLASH_PATIAGGRO3 = "/pt" -- transition from the old PaTiTank (owner 2026-10-14); remove the old PaTiTank folder
+SlashCmdList.PATIAGGRO = function(message)
     local command = COMMANDS[(message or ""):match("^%s*(.-)%s*$"):lower()]
     if command and DB then command() else say("HELP") end
 end
@@ -440,8 +538,9 @@ for _, event in ipairs({ "PLAYER_LOGIN", "PLAYER_ENTERING_WORLD",
     events:RegisterEvent(event)
 end
 -- Aggro events: registered through pcall — should one not exist in this client, the monitor still works
--- with the rest (see /pt debug).
+-- with the rest (see /paggro debug).
 for _, event in ipairs({ "NAME_PLATE_UNIT_ADDED", "NAME_PLATE_UNIT_REMOVED", "UNIT_TARGET", "GROUP_ROSTER_UPDATE",
+    "PLAYER_ROLES_ASSIGNED",
     "PLAYER_REGEN_DISABLED", "PLAYER_REGEN_ENABLED" }) do
     aggroEvents[event] = pcall(events.RegisterEvent, events, event)
 end
@@ -457,8 +556,8 @@ events:SetScript("OnEvent", function(_, event, unit)
         Threat.PlateRemoved(unit)
         requestScan()
     elseif event == "PLAYER_LOGIN" then
-        PaTiTankDB = Logic.Migrate(PaTiTankDB)
-        DB = PaTiTankDB
+        PaTiAggroDB = Logic.Migrate(PaTiAggroDB)
+        DB = PaTiAggroDB
         UI.SetLanguage(DB.language)
         window:Attach(DB, -330, 0)
         window:SetScale(DB.scale)
@@ -470,8 +569,8 @@ events:SetScript("OnEvent", function(_, event, unit)
         paintAll()
     elseif event == "UNIT_TARGET" then
         if PARTY[unit] then requestScan() end -- fires for every unit (nameplates too); only party targets matter
-    elseif event == "GROUP_ROSTER_UPDATE" then
-        paintTarget() -- the "Next" line reads the group
+    elseif event == "GROUP_ROSTER_UPDATE" or event == "PLAYER_ROLES_ASSIGNED" then
+        paintAll() -- the view follows your group role (AUTO); the "Next" line reads the group
         requestScan()
     elseif event == "PLAYER_REGEN_DISABLED" or event == "PLAYER_REGEN_ENABLED" then
         requestScan()

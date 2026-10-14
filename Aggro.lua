@@ -1,4 +1,4 @@
--- PaTiTank: aggro control rules, no WoW API calls (tested in tests/aggro_spec.lua).
+-- PaTiAggro: aggro control rules, no WoW API calls (tested in tests/aggro_spec.lua).
 -- Answers one question: which enemies do I not hold any more? Display only — no target, no taunt.
 local _, ns = ...
 local Aggro = {}
@@ -135,4 +135,57 @@ function Aggro.NextThreat(tanking, others)
     if unreadable then return { state = "UNKNOWN" } end
     if not best then return nil end
     return { holder = best.holder, percent = percent, state = percent >= Aggro.NEXT_WARN and "WARNING" or "LOW" }
+end
+
+-- Your own threat on one enemy, by your role (owner 2026-10-14). status = your threat status on it (0-3, nil = you are
+-- not on its threat list), percent = the scaled percent (100 = you pull it); either may be UNREADABLE.
+-- Tank: by status — while you tank, WoW reports 100 % for you, so a percent can never warn you. Healer/Damage: AGGRO
+-- as soon as it is on you (status 2/3), else WARNING from NEXT_WARN and DANGER from NEXT_DANGER percent.
+-- Returns nil (not on its list) or { state = "GOOD"|"WARNING"|"DANGER"|"AGGRO"|"UNKNOWN", percent = 0-999 | nil }.
+function Aggro.SelfThreat(role, status, percent)
+    if status == Aggro.UNREADABLE then return { state = "UNKNOWN" } end
+    local readable = type(percent) == "number" and math.max(0, math.min(999, math.floor(percent + 0.5))) or nil
+    if role == "TANK" then
+        local state = (status == 3 and "GOOD") or (status == 2 and "WARNING")
+            or ((status == 0 or status == 1) and "DANGER") or nil
+        return state and { state = state, percent = readable } or nil
+    end
+    if status == 2 or status == 3 then return { state = "AGGRO", percent = readable } end
+    if status == nil then return nil end
+    if not readable then return { state = "UNKNOWN" } end
+    local state = (readable >= Aggro.NEXT_DANGER and "DANGER") or (readable >= Aggro.NEXT_WARN and "WARNING")
+        or "GOOD"
+    return { state = state, percent = readable }
+end
+
+-- UNKNOWN ranks above WARNING: an unreadable enemy could be the dangerous one — but below a readable DANGER or AGGRO.
+local SELF_RANK = { GOOD = 1, WARNING = 2, UNKNOWN = 3, DANGER = 4, AGGRO = 5 }
+
+-- The worst of your SelfThreat results over several enemies (healer/damage: every enemy the group fights, since
+-- healing threat lands on all of them, not only on a target). Ties: the higher percent. Returns nil for an empty list,
+-- else that result plus .onYou = how many of them attack you (AGGRO).
+function Aggro.SelfWorst(results)
+    local worst, onYou = nil, 0
+    for _, result in ipairs(results) do
+        if result.state == "AGGRO" then onYou = onYou + 1 end
+        local rank, best = SELF_RANK[result.state], worst and SELF_RANK[worst.state] or 0
+        if rank > best or (rank == best and (result.percent or 0) > (worst.percent or 0)) then worst = result end
+    end
+    if not worst then return nil end
+    return { state = worst.state, percent = worst.percent, onYou = onYou }
+end
+
+-- Healer/Damage rows: the enemies that attack you (your status 2/3), shown red like a lost enemy. Copies — the
+-- scanned enemies stay as they are.
+function Aggro.OnYou(enemies)
+    local rows = {}
+    for _, enemy in ipairs(enemies) do
+        if enemy.playerStatus == 2 or enemy.playerStatus == 3 then
+            local row = {}
+            for key, value in pairs(enemy) do row[key] = value end
+            row.state, row.onYou = "LOST", true
+            rows[#rows + 1] = row
+        end
+    end
+    return rows
 end

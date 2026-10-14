@@ -1,4 +1,4 @@
--- PaTiTank settings and threat value. Run via PaTiAdmin/tools/check.sh.
+-- PaTiAggro settings and threat value. Run via PaTiAdmin/tools/check.sh.
 local wow = require("wow_api")
 
 local function load()
@@ -89,5 +89,21 @@ describe("Window settings (panel opacity)", function()
         assert.equal(0.4, db.opacity)
         db = M.RestoreDefaults({ opacity = 0.4, snapWindows = false, bindings = {}, bindingRanks = {}, watch = {} })
         assert.equal(0.75, db.opacity)
+    end)
+end)
+
+describe("Logic roles", function()
+    it("defaults to AUTO and repairs an unknown saved role", function()
+        assert.equal("AUTO", load().Migrate(nil).myRole)
+        assert.equal("HEALER", load().Migrate({ myRole = "HEALER" }).myRole)
+        assert.equal("AUTO", load().Migrate({ myRole = "BARD" }).myRole)
+    end)
+
+    it("uses the chosen role, else the group role, else the tank view", function()
+        local Logic = load()
+        assert.equal("DAMAGER", Logic.EffectiveRole("DAMAGER", "HEALER"))
+        assert.equal("HEALER", Logic.EffectiveRole("AUTO", "HEALER"))
+        assert.equal("TANK", Logic.EffectiveRole("AUTO", nil))
+        assert.equal("TANK", Logic.EffectiveRole("AUTO", "NONE"))
     end)
 end)

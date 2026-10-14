@@ -1,4 +1,4 @@
--- PaTiTank: SavedVariables robustness (hardening 2026-10-02). Broken or odd saves must never break the login:
+-- PaTiAggro: SavedVariables robustness (hardening 2026-10-02). Broken or odd saves must never break the login:
 -- Migrate returns a usable table, keeps valid values (also false) and is idempotent. Run via PaTiAdmin/tools/check.sh.
 local wow = require("wow_api")
 
@@ -26,7 +26,7 @@ local BROKEN = {
         language = 42, opacity = "x", unknownKey = { deep = { deeper = true } } } },
 }
 
-describe("PaTiTank Migrate robustness", function()
+describe("PaTiAggro Migrate robustness", function()
     for _, case in ipairs(BROKEN) do
         it("survives a broken save: " .. case.name, function()
             local M = load()

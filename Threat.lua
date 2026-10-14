@@ -1,4 +1,4 @@
--- PaTiTank: threat adapter (the only place with threat/nameplate API calls).
+-- PaTiAggro: threat adapter (the only place with threat/nameplate API calls).
 -- Reads the enemies WoW exposes through unit tokens — your target, visible nameplates, your party's targets —
 -- and the threat situation of you and your group on each. It never targets or acts. Every value is checked for
 -- secrecy before it is compared; anything unreadable becomes Aggro.UNREADABLE (→ state UNKNOWN).
@@ -28,7 +28,7 @@ function Threat.PlateRemoved(unit) if type(unit) == "string" then plates[unit] =
 local function situation(unit, enemy)
     if not UnitThreatSituation then return UNREADABLE end
     local ok, status = pcall(UnitThreatSituation, unit, enemy)
-    if not ok then Threat.lastError = tostring(status):sub(1, 120) end -- /pt debug only
+    if not ok then Threat.lastError = tostring(status):sub(1, 120) end -- /paggro debug only
     if not ok or isSecret(status) then return UNREADABLE end
     if status ~= nil and type(status) ~= "number" then return UNREADABLE end
     return status
@@ -58,6 +58,7 @@ end
 
 local function readEnemy(unit)
     local enemy = { unit = unit, name = UnitName(unit), playerStatus = situation("player", unit) }
+    enemy.playerPercent = select(2, Threat.Self(unit)) -- your scaled percent (healer/damage view)
     if enemy.playerStatus == 3 or enemy.playerStatus == 2 then return enemy end -- you hold it: no holder search
     local candidate
     for _, member in ipairs(GROUP) do
@@ -109,17 +110,19 @@ function Threat.Scan()
     return enemies
 end
 
--- UnitDetailedThreatSituation(unit, enemy) → isTanking, status, scaledPercent, …; nil percent = not on its threat
--- list. Secret values, API errors or odd types become UNREADABLE (checked before any comparison).
+-- UnitDetailedThreatSituation(unit, enemy) → isTanking, status, scaledPercent, …; returned as tanking, percent, status
+-- (nil percent/status = not on its threat list). Secret values, API errors or odd types become UNREADABLE (checked
+-- before any comparison).
 local function detailed(unit, enemy)
-    local ok, tanking, _, percent = pcall(UnitDetailedThreatSituation, unit, enemy)
+    local ok, tanking, status, percent = pcall(UnitDetailedThreatSituation, unit, enemy)
     if not ok then
-        Threat.lastError = tostring(tanking):sub(1, 120) -- /pt debug only
-        return UNREADABLE, UNREADABLE
+        Threat.lastError = tostring(tanking):sub(1, 120) -- /paggro debug only
+        return UNREADABLE, UNREADABLE, UNREADABLE
     end
     if isSecret(tanking) then tanking = UNREADABLE else tanking = tanking == true or tanking == 1 end
     if isSecret(percent) or (percent ~= nil and type(percent) ~= "number") then percent = UNREADABLE end
-    return tanking, percent
+    if isSecret(status) or (status ~= nil and type(status) ~= "number") then status = UNREADABLE end
+    return tanking, percent, status
 end
 
 -- Input of Aggro.NextThreat for one enemy (e.g. "target"): whether you tank it, and the threat of every group member
@@ -135,4 +138,19 @@ function Threat.Next(enemy)
         end
     end
     return tanking, others
+end
+
+-- Your own threat on one enemy: status (0-3) and scaled percent; nil = not on its threat list, UNREADABLE = secret or
+-- an API error. No API → nil, nil (nothing known, nothing shown).
+function Threat.Self(enemy)
+    if not UnitDetailedThreatSituation then return nil, nil end
+    local _, percent, status = detailed("player", enemy)
+    return status, percent
+end
+
+-- The group role WoW reports for you (TANK / HEALER / DAMAGER), nil without one or when it is secret.
+function Threat.PlayerRole()
+    local value = role("player")
+    if value == "PET" then return nil end
+    return value
 end

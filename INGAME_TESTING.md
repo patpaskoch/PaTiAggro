@@ -1,4 +1,4 @@
-# Ingame Testing – PaTiTank
+# Ingame Testing – PaTiAggro (früher PaTiTank)
 
 World of Warcraft: Forever
 Interface: 16001
@@ -16,6 +16,9 @@ Regeln und Eintragen von Ergebnissen: [PaTiAdmin/docs/TESTING.md](https://github
 - 🔧 FIX IMPLEMENTED = Codefix vorhanden, Retest noch offen
 - ✅ VERIFIED = erfolgreich im echten Client bestätigt
 - MANUAL RETEST REQUIRED = erneuter Test notwendig
+
+> Umbenannt 2026-10-14: Die Tests `PT-TANK-…` behalten ihre IDs (IDs werden nie umnummeriert) und gelten für PaTiAggro
+> in der Tank-Ansicht; `/pt` funktioniert weiter, `/paggro` ist der neue Befehl. Neue Tests heißen `PT-AGGRO-…`.
 
 ## Installation / Laden
 
@@ -127,3 +130,38 @@ Panel-Zeilen sind nicht klickbar (technisch blockiert, F17) und werden nicht get
 - [ ] PT-TANK-110 Zusammen mit allen PaTi-Addons geladen: kein Lua-Fehler
 - [ ] PT-TANK-111 Keine Slash-Command-Kollision: `/pt` und `/patitank` antworten nur PaTiTank
 - [ ] PT-TANK-112 Eigene Einstellungen speichern nur PaTiTank-Werte; Fenster erscheint in PaTiSuite
+
+## Umbenennung (PaTiAggro)
+
+- [ ] PT-AGGRO-001 Alter Ordner `PaTiTank` gelöscht, `PaTiAggro` installiert: Addon heißt in der AddOn-Liste PaTiAggro,
+  mit Beschreibung und Icon; Login ohne Lua-Fehler
+  - MANUAL RETEST REQUIRED
+- [ ] PT-AGGRO-002 `/paggro`, `/patiaggro` und `/pt` öffnen/schließen das Fenster; `/paggro debug` zeigt die Zeile „Role:“
+  - MANUAL RETEST REQUIRED
+- [ ] PT-AGGRO-003 Einstellungen starten einmal neu (Position, Größe …), danach bleiben sie nach `/reload`
+  - MANUAL RETEST REQUIRED
+- [ ] PT-AGGRO-004 PaTiAlerts zeigt Aggro-Meldungen unter der Quelle „PaTiAggro“; PaTiSuite listet „Aggro“ statt „Tank“
+  - MANUAL RETEST REQUIRED
+
+## Rollen
+
+- [ ] PT-AGGRO-010 Einstellung „Meine Rolle“: Auto / Tank / Heiler / Schaden; Wechsel sofort sichtbar (Beschriftungen,
+  Block „AGGRO“ ↔ „AUF DIR“), bleibt nach `/reload`
+  - MANUAL RETEST REQUIRED
+- [ ] PT-AGGRO-011 Auto in der Gruppe mit zugewiesener Rolle (Heiler/Schaden) zeigt die passende Ansicht; ohne Rolle die
+  Tank-Ansicht
+  - MANUAL RETEST REQUIRED
+- [ ] PT-AGGRO-012 Tank: Balken grün, solange du das Ziel sicher hältst; gelb, wenn jemand mehr Bedrohung hat; rot, wenn
+  ein anderer es hat
+  - MANUAL RETEST REQUIRED
+- [ ] PT-AGGRO-013 Heiler/Schaden: „Deine Bedrohung (höchste)“ steigt beim Heilen/Schaden; „Du: ruhig“ unter 70 %,
+  „steigt“ ab 70 %, „ziehst gleich“ ab 90 % (Farbe passend)
+  - MANUAL RETEST REQUIRED
+- [ ] PT-AGGRO-014 Heiler/Schaden: Ein Gegner greift dich an → „AGGRO auf dir!“, voller roter Balken, Zeile im Block
+  „AUF DIR“ mit „→ dich“ und Nummer am Namensschild; Aggro weg → Zeile und Nummer verschwinden
+  - MANUAL RETEST REQUIRED
+- [ ] PT-AGGRO-015 Heiler ohne Ziel: Bedrohung wird trotzdem angezeigt (Feind-Namensschilder an, Taste V)
+  - MANUAL RETEST REQUIRED
+- [ ] PT-AGGRO-016 `/paggro test` mit Rolle Heiler oder Schaden: „AGGRO auf dir!“ und eine Zeile Ghul → dich;
+  mit Rolle Tank die bisherige Testansicht (Balken grün 100 %, „Nächster: Schaden 84 %“)
+  - MANUAL RETEST REQUIRED

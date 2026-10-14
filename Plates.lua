@@ -1,4 +1,4 @@
--- PaTiTank: the row number of a problem enemy ("1", "2" …) above its nameplate, coloured by state (lost red,
+-- PaTiAggro: the row number of a problem enemy ("1", "2" …) above its nameplate, coloured by state (lost red,
 -- barely held yellow, unclear grey). The same number stands in front of the row in the panel (Aggro.Number).
 -- Why: a row in the aggro panel cannot target in combat — which enemy a row shows is decided by addon code, and
 -- WoW forbids re-pointing, moving or showing secure buttons in combat (docs/WOW_API_COMPAT.md, FOLLOW_UPS F17).

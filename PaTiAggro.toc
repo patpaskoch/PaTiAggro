@@ -1,0 +1,17 @@
+## Interface: 16001
+## Title: PaTiAggro
+## Notes: Aggro for tank, healer and damage: your threat, who pulls next, enemies you lost or that attack you
+## Notes-deDE: Aggro für Tank, Heiler und Schaden: deine Bedrohung, wer als Nächstes zieht, verlorene Gegner und Gegner auf dir
+## Author: PaTi
+## Version: 0.1.0
+## IconTexture: Interface\AddOns\PaTiAggro\Media\icon
+## SavedVariablesPerCharacter: PaTiAggroDB
+
+Shared\Shared.xml
+Locales\enUS.lua
+Locales\deDE.lua
+Logic.lua
+Aggro.lua
+Threat.lua
+Plates.lua
+PaTiAggro.lua

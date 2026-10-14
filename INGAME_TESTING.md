@@ -89,6 +89,7 @@ Regeln und Eintragen von Ergebnissen: [PaTiAdmin/docs/TESTING.md](https://github
 ## Aggro Control
 
 - [ ] PT-TANK-060 Pull mit 3+ Gegnern: „x / y unter Kontrolle“ stimmt
+  - Owner 2026-10-14 (Gruppe): unsicher, ob die Anzahl bei AGGRO GESAMT gestimmt hat — bitte gezielt erneut prüfen
 - [ ] PT-TANK-061 Verlorener Gegner (LOST): rote Zeile mit Halter
 - [ ] PT-TANK-062 Knapp gehaltener Gegner (DANGER): gelbe Zeile
 - [ ] PT-TANK-063 Nicht lesbare Daten (UNKNOWN): graue Zeile „unklar“, nie „unter Kontrolle“
@@ -221,6 +222,8 @@ Panel-Zeilen sind nicht klickbar (technisch blockiert, F17) und werden nicht get
   die anderen sortiert nach Prozent (gelb ab 70 %, rot ab 90 %); `/paggro test`: Brom (Tank) hat Aggro, Lyra
   (Schaden) 84 %, Mira (Heiler) 35 %
   - MANUAL RETEST REQUIRED
+  - Owner 2026-10-14 (Gruppe): „man hat die Balken gesehen von den anderen und der Tank oben … sonst hat es gut
+    funktioniert“ (Teilbestätigung: Anzeige und Tank oben; Farben und Prozent nicht einzeln genannt)
 - [ ] PT-AGGRO-026 AGGRO TEAM: rechts „Name (Rolle)“ statt nur Rolle — rot: wer den Gegner hat, gelb: wer ihn gleich
   übernimmt; `/paggro test`: Ghul → Mira (Heiler), Zombie → Lyra (Schaden)
   - MANUAL RETEST REQUIRED

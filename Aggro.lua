@@ -112,7 +112,7 @@ end
 -- already counts the 110 % melee / 130 % ranged rule). Warning from NEXT_WARN, danger from NEXT_DANGER.
 Aggro.NEXT_WARN, Aggro.NEXT_DANGER = 70, 90
 
--- "AGGRO NOW" rows for one enemy (owner 2026-10-14): entries from Threat.Current, sorted — the one who has the aggro
+-- "AGGRO TARGET" rows for one enemy (owner 2026-10-14): entries from Threat.Current, sorted — the one who has the aggro
 -- first, then by percent, unreadable last. Each row gets .state: "HOLDS" (has the aggro), "GOOD" (below NEXT_WARN),
 -- "WARNING" (from NEXT_WARN), "DANGER" (from NEXT_DANGER, about to pull) or "UNKNOWN"; .percent rounded (0-999).
 -- At most max rows.

@@ -79,7 +79,7 @@ Regeln und Eintragen von Ergebnissen: [PaTiAdmin/docs/TESTING.md](https://github
   - MANUAL RETEST REQUIRED
   - 🔧 FIX IMPLEMENTED 2026-10-14 (Owner: Zeile nur, wenn es wichtig ist)
   - MANUAL RETEST REQUIRED
-  - RETIRED 2026-10-14 – „Nächster“ entfällt (Owner), ersetzt durch AGGRO AKTUELL: PT-AGGRO-025
+  - RETIRED 2026-10-14 – „Nächster“ entfällt (Owner), ersetzt durch AGGRO ZIEL: PT-AGGRO-025
 - ~~PT-TANK-115 „Nächster: —“ ohne Ziel, solo, oder wenn du das Ziel nicht tankst; `/pt test` zeigt „Schaden 84 %“ gelb~~
   - RETIRED 2026-10-14 – die Zeile „Nächster“ erscheint nur noch ab 70 % (Owner), ersetzt durch PT-AGGRO-018
 - [ ] PT-TANK-116 Begleiter (Jägerpet/Wichtel) wird als „Begleiter“ berücksichtigt; im Kampf kein Lua-Fehler, Werte
@@ -153,7 +153,7 @@ Panel-Zeilen sind nicht klickbar (technisch blockiert, F17) und werden nicht get
 
 ## Rollen
 
-> Seit 2026-10-14 (drei Bereiche): Die Tank-Farbe steht am Balken „hat Aggro“ in AGGRO AKTUELL; die Bedrohung von
+> Seit 2026-10-14 (drei Bereiche): Die Tank-Farbe steht am Balken „hat Aggro“ in AGGRO ZIEL; die Bedrohung von
 > Heiler/Schaden steht rechts bei AGGRO GESAMT; „AUF DIR“ ist der dritte Bereich.
 
 - [ ] PT-AGGRO-010 Einstellung „Meine Rolle“: Auto / Tank / Heiler / Schaden; Wechsel sofort sichtbar (Beschriftungen,
@@ -211,16 +211,21 @@ Panel-Zeilen sind nicht klickbar (technisch blockiert, F17) und werden nicht get
   - Owner 2026-10-14: „Zombie knapp“ unverständlich → zeigt jetzt, wer gleich übernimmt
   - 🔧 FIX IMPLEMENTED 2026-10-14
   - MANUAL RETEST REQUIRED
-- [ ] PT-AGGRO-024 Drei Bereiche mit deutlichem Abstand: AGGRO GESAMT (5 / 6), AGGRO AKTUELL (Gegnername rechts),
+- [ ] PT-AGGRO-024 Drei Bereiche mit deutlichem Abstand: AGGRO GESAMT (5 / 6), AGGRO ZIEL (Gegnername rechts),
   AGGRO TEAM; kein „Nächster“ und kein einzelner Bedrohungsbalken mehr
   - Owner 2026-10-14: „Nächster“ unverständlich, drei Bereiche gewünscht → umgebaut
   - 🔧 FIX IMPLEMENTED 2026-10-14
   - MANUAL RETEST REQUIRED
-- [ ] PT-AGGRO-025 AGGRO AKTUELL: du und jeder Mitspieler (und Begleiter) auf deinem Ziel als Balken „Name (Rolle)“,
+- [ ] PT-AGGRO-025 AGGRO ZIEL: du und jeder Mitspieler (und Begleiter) auf deinem Ziel als Balken „Name (Rolle)“,
   ohne Rolle „Name (Klasse)“; wer die Aggro hat, steht oben mit „hat Aggro“ (grün, wenn richtig; rot, wenn falsch),
   die anderen sortiert nach Prozent (gelb ab 70 %, rot ab 90 %); `/paggro test`: Brom (Tank) hat Aggro, Lyra
   (Schaden) 84 %, Mira (Heiler) 35 %
   - MANUAL RETEST REQUIRED
 - [ ] PT-AGGRO-026 AGGRO TEAM: rechts „Name (Rolle)“ statt nur Rolle — rot: wer den Gegner hat, gelb: wer ihn gleich
   übernimmt; `/paggro test`: Ghul → Mira (Heiler), Zombie → Lyra (Schaden)
+  - MANUAL RETEST REQUIRED
+- [ ] PT-AGGRO-027 Bereichsnamen klein in Akzentfarbe wie „ZIEL“ bei PaTiHeal: oben groß „5 / 6“, daneben klein
+  „AGGRO GESAMT“; unter den Ziel-Balken klein „AGGRO ZIEL“ mit Gegnernamen; „AGGRO TEAM“ klein über der Liste
+  - Owner 2026-10-14: Design passt nicht zu PaTiHeal, Bereichsnamen zu groß → umgestellt
+  - 🔧 FIX IMPLEMENTED 2026-10-14
   - MANUAL RETEST REQUIRED

@@ -1,5 +1,5 @@
 -- PaTiAggro (the former PaTiTank, renamed 2026-10-14): aggro for every role. Display only; no secure frames.
--- Three sections: AGGRO TOTAL (tank: enemies you hold; healer/damage: your highest threat), AGGRO NOW (you and your
+-- Three sections: AGGRO TOTAL (tank: enemies you hold; healer/damage: your highest threat), AGGRO TARGET (you and your
 -- group on your target, sorted) and AGGRO TEAM (tank: enemies that need you; healer/damage: enemies on you).
 -- The view follows the "My role" setting (Logic.EffectiveRole).
 local addonName, ns = ...
@@ -10,7 +10,7 @@ local testMode = false
 local aggroEvents = {} -- event -> registered (see Events)
 
 local WIDTH, BAR_WIDTH, PAD, LINE = 280, 252, UI.Spacing.MD, 18
-local MEMBER_BAR = 14 -- height of one "AGGRO NOW" bar inside its LINE
+local MEMBER_BAR = 14 -- height of one "AGGRO TARGET" bar inside its LINE
 local SECTION_GAP = UI.Spacing.LG + UI.Spacing.MD -- clear space between the three sections (owner 2026-10-14)
 local MAX_CURRENT = 6 -- you, party1-4, pet
 
@@ -35,9 +35,9 @@ end
 
 -- Window ---------------------------------------------------------------------------------------
 -- Three sections, top to bottom (owner 2026-10-14), with clear space between them:
---   AGGRO TOTAL  5 / 6          (healer/damage: your highest threat over all fought enemies)
---   AGGRO NOW    <enemy name>   you and your group on your target, sorted: "Name (Role)" and a percent bar each
---   AGGRO TEAM                  the enemies that need you (healer/damage: ON YOU — the enemies that attack you)
+--   5 / 6  AGGRO TOTAL           large number, small caption (healer/damage: your highest threat)
+--   bars, then AGGRO TARGET <enemy>   you and your group on your target, sorted: "Name (Role)" and a percent bar
+--   AGGRO TEAM, then rows        the enemies that need you (healer/damage: ON YOU — the enemies that attack you)
 
 local window = UI.CreateWindow("PaTiAggroFrame", "PaTiAggro", WIDTH, 120)
 window:SetCombatMovable(true) -- no secure children: may be dragged in combat too (PaTiShared)
@@ -45,24 +45,36 @@ local content = CreateFrame("Frame", nil, window) -- everything below the header
 content:SetPoint("TOPLEFT", 0, -UI.Sizes.HeaderHeight)
 content:SetPoint("BOTTOMRIGHT")
 
--- A section: a title on the left and a value on the right; its rows hang below the title line.
+-- Section names are small captions in the accent colour, like PaTiHeal's "TARGET" mark (owner 2026-10-14: the same
+-- look in both addons). The values carry the weight, the captions only tell what they are.
+local CAPTION = 12 -- height of a caption line
 local function newSection(titleKey)
     local section = CreateFrame("Frame", nil, content)
     section:SetHeight(LINE)
-    section.title = section:CreateFontString(nil, "OVERLAY", UI.Fonts.Label)
-    section.title:SetPoint("TOPLEFT", PAD, -2)
+    section.title = section:CreateFontString(nil, "OVERLAY", UI.Fonts.Muted)
     UI.BindText(section.title, titleKey)
-    section.value = section:CreateFontString(nil, "OVERLAY", UI.Fonts.Text)
-    section.value:SetPoint("TOPRIGHT", -PAD, -2)
-    section.value:SetPoint("LEFT", section.title, "RIGHT", UI.Spacing.SM, 0)
+    UI.Paint(section.title, "SetTextColor", "Accent")
+    section.value = section:CreateFontString(nil, "OVERLAY", UI.Fonts.Muted)
     section.value:SetJustifyH("RIGHT")
     section.value:SetWordWrap(false)
     return section
 end
 
+-- AGGRO TOTAL: the number large on the left, the caption small beside it.
 local total = newSection("AGGRO_TOTAL")
-local now = newSection("AGGRO_NOW")
+total.value:SetFontObject(UI.Fonts.Title)
+total.value:SetPoint("TOPLEFT", PAD, -1)
+total.value:SetJustifyH("LEFT")
+total.title:SetPoint("BOTTOMLEFT", total.value, "BOTTOMRIGHT", UI.Spacing.SM, 1)
+-- AGGRO TARGET: the bars first, the caption small below them (placed in placeSections), the enemy name beside it.
+local now = newSection("AGGRO_TARGET")
+now.value:SetPoint("LEFT", now.title, "RIGHT", UI.Spacing.SM, 0)
+now.value:SetPoint("RIGHT", now, "RIGHT", -PAD, 0)
+now.value:SetJustifyH("LEFT")
+-- AGGRO TEAM: the caption small above the rows.
 local team = newSection("AGGRO_TEAM")
+team.title:SetPoint("TOPLEFT", PAD, 0)
+team.value:SetPoint("TOPRIGHT", -PAD, 0)
 
 -- "Name (Role)" in two strings: a member name may be secret (SetText only, never joined with other text).
 local function newMemberText(parent, font)
@@ -76,12 +88,12 @@ local function newMemberText(parent, font)
     return name, tag
 end
 
--- AGGRO NOW rows: one bar per member — "Name (Role)" left, percent (or "has aggro") right.
+-- AGGRO TARGET rows: one bar per member — "Name (Role)" left, percent (or "has aggro") right.
 local NAME_WIDTH = 110
 local members = {}
 for index = 1, MAX_CURRENT do
     local bar = CreateFrame("StatusBar", nil, now)
-    bar:SetPoint("TOPLEFT", PAD, -index * LINE - (LINE - MEMBER_BAR) / 2)
+    bar:SetPoint("TOPLEFT", PAD, -(index - 1) * LINE - (LINE - MEMBER_BAR) / 2)
     bar:SetSize(BAR_WIDTH, MEMBER_BAR)
     bar:SetStatusBarTexture(UI.WHITE)
     bar:SetMinMaxValues(0, 100)
@@ -106,7 +118,7 @@ local HOLDER_WIDTH, TAG_WIDTH, NUMBER_WIDTH = 64, 58, 12
 local STATE_COLOR = { LOST = "Danger", DANGER = "Warning", UNKNOWN = "TextMuted" }
 local rows = {}
 for index = 1, Aggro.MAX_ROWS do
-    local top = index * LINE
+    local top = CAPTION + (index - 1) * LINE
     local marker = team:CreateTexture(nil, "ARTWORK")
     marker:SetPoint("TOPLEFT", PAD, -top - 3)
     marker:SetSize(3, LINE - 6)
@@ -137,15 +149,17 @@ local shownMembers, shownRows = 0, 0
 local lastNumbers = {} -- readable GUID -> row number of the last paint (Aggro.Number keeps numbers stable)
 local rowUnit = {}     -- row index -> nameplate token its number belongs to (cleared on plate events)
 
--- Sections stack with SECTION_GAP between them; AGGRO NOW and AGGRO TEAM grow with their rows. Returns the height.
+-- Sections stack with SECTION_GAP between them; AGGRO TARGET and AGGRO TEAM grow with their rows. Returns the height.
 local function placeSections()
+    now.title:ClearAllPoints()
+    now.title:SetPoint("TOPLEFT", PAD, -shownMembers * LINE - 1) -- the caption sits below the bars
+    local heights = { LINE + 2, shownMembers * LINE + CAPTION, CAPTION + shownRows * LINE }
     local top = UI.Spacing.SM
-    for _, entry in ipairs({ { total, 0 }, { now, shownMembers }, { team, shownRows } }) do
-        local section, count = entry[1], entry[2]
+    for index, section in ipairs({ total, now, team }) do
         section:ClearAllPoints()
         section:SetPoint("TOPLEFT", content, "TOPLEFT", 0, -top)
         section:SetPoint("TOPRIGHT", content, "TOPRIGHT", 0, -top)
-        top = top + LINE + count * LINE + SECTION_GAP
+        top = top + heights[index] + SECTION_GAP
     end
     return top - SECTION_GAP
 end
@@ -182,7 +196,7 @@ local function updateRole()
     lastNumbers = {}
 end
 
--- Colour of an AGGRO NOW bar. Who has the aggro: green when that is right (you as tank, or the tank when you are
+-- Colour of an AGGRO TARGET bar. Who has the aggro: green when that is right (you as tank, or the tank when you are
 -- not), red when it is wrong. Everyone else by how close they are to pulling (70 / 90 %).
 local CURRENT_COLOR = { GOOD = "TextMuted", WARNING = "Warning", DANGER = "Danger", UNKNOWN = "TextMuted" }
 local function memberColor(row)
@@ -194,7 +208,7 @@ end
 
 local applyLayout -- defined below; the sections change the window height
 
--- AGGRO NOW: you and your group on your target.
+-- AGGRO TARGET: you and your group on your target.
 local function paintNow()
     local list
     if testMode then
@@ -614,7 +628,7 @@ events:SetScript("OnEvent", function(_, event, unit)
     elseif event == "UNIT_TARGET" then
         if PARTY[unit] then requestScan() end -- fires for every unit (nameplates too); only party targets matter
     elseif event == "GROUP_ROSTER_UPDATE" or event == "PLAYER_ROLES_ASSIGNED" then
-        paintAll() -- the view follows your group role (AUTO); AGGRO NOW reads the group
+        paintAll() -- the view follows your group role (AUTO); AGGRO TARGET reads the group
         requestScan()
     elseif event == "PLAYER_REGEN_DISABLED" or event == "PLAYER_REGEN_ENABLED" then
         requestScan()

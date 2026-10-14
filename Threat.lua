@@ -139,7 +139,7 @@ local function detailed(unit, enemy)
     return tanking, percent, status
 end
 
--- "AGGRO NOW" for one enemy (e.g. "target", owner 2026-10-14): you and every group member on its threat list, each
+-- "AGGRO TARGET" for one enemy (e.g. "target", owner 2026-10-14): you and every group member on its threat list, each
 -- with whether they tank it and their scaled percent (100 = they pull it). Members not on the list are left out;
 -- you are always listed when the threat API exists (0 % on an enemy nobody attacked yet — Threat.ZeroThreat).
 function Threat.Current(enemy)

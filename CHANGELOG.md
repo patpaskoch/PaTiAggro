@@ -38,10 +38,13 @@ History before this file: `git log`.
   Test mode shows 6 enemies: 4 held, 1 barely held, 1 on the healer. `/pt debug` shows which aggro APIs exist.
 - Tests for the collapsed state (default, migration keeps a saved value, restore defaults expands).
 ### Changed
-- Three sections (owner 2026-10-14): **AGGRO TOTAL** (5 / 6), **AGGRO NOW** (you and your group on your target, sorted,
+- Section names as small accent captions like PaTiHeal's "TARGET" mark (owner 2026-10-14): `5 / 6` large with
+  "AGGRO TOTAL" small beside it; "AGGRO NOW" is now **AGGRO TARGET**, its caption and the enemy name below the bars;
+  "AGGRO TEAM" small above its rows.
+- Three sections (owner 2026-10-14): **AGGRO TOTAL** (5 / 6), **AGGRO TARGET** (you and your group on your target, sorted,
   "Name (Role)" — the class when there is no role — with a percent bar each; the one who has it shows "has aggro")
   and **AGGRO TEAM** (the enemy rows, now "Name (Role)" of who has or is about to take each enemy). The "Next" bar
-  and the separate threat bar are gone; AGGRO NOW shows everyone.
+  and the separate threat bar are gone; AGGRO TARGET shows everyone.
 - New order (owner 2026-10-14): "AGGRO TOTAL 5 / 6" at the top, then the target bar, the "Next" bar and the enemy rows.
   A yellow row ("barely held") now names the member about to take the enemy; without one it reads "slipping".
 - Tank "Next" is now a small bar with the player's name (owner 2026-10-14) instead of a text line; the percent is

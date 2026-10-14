@@ -50,22 +50,25 @@ Klappt etwas nicht? Schreib einfach, bei welchem Schritt du hängst — am beste
 The window has three sections, top to bottom, with clear space between them:
 
 ```
-AGGRO TOTAL                     5 / 6
-AGGRO NOW                   Test enemy
+5 / 6  AGGRO TOTAL
+
 [ Brom (Tank)              has aggro ]   green: the right one has it
 [ Lyra (Damage)                 84 % ]   yellow from 70 %, red from 90 % (100 % = they take it)
 [ Mira (Healer)                 35 % ]
+AGGRO TARGET  Test enemy
+
 AGGRO TEAM
 ▌1 Ghoul                Mira (Healer)    red: Mira has it
 ▌2 Zombie               Lyra (Damage)    yellow: you still hold it, Lyra is about to take it
 ```
+The section names are small captions in the accent colour, like PaTiHeal's "TARGET" mark.
 
 **AGGRO TOTAL**
 - Tank: how many of the enemies your group fights you hold (`5 / 6`)
 - Healer/damage: your highest threat over your target and every enemy the group fights (healing threat lands on all
   of them) — white below 70 %, yellow from 70 %, red from 90 %, `AGGRO on you!` as soon as an enemy attacks you
 
-**AGGRO NOW** — your target's name on the right
+**AGGRO TARGET** — the bars, with the caption and your target's name below them
 - You and every group member (and pet) on its threat list, sorted: who has the aggro first, then by percent
 - Each as `Name (Role)` — the role when WoW assigned one, else the class
 - The one who has it shows "has aggro": green when that is right (you as tank, or the tank when you are not),

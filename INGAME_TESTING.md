@@ -188,3 +188,8 @@ Panel-Zeilen sind nicht klickbar (technisch blockiert, F17) und werden nicht get
   - Owner 2026-10-14: bei nicht angegriffenem Ziel stand keine Zahl statt „0 %“ → ❌ FAIL 2026-10-14
   - 🔧 FIX IMPLEMENTED 2026-10-14
   - MANUAL RETEST REQUIRED
+- [ ] PT-AGGRO-021 Tank „Nächster“ als kleiner Balken unter dem Bedrohungsbalken: Spielername links, Prozent rechts,
+  gelb ab 70 %, rot ab 90 %; `/paggro test` zeigt „Lyra 84 %“ gelb
+  - Owner 2026-10-14: Zeile „Nächster: Schaden 84 %“ unklar (Rolle statt Name, eigene 100 % daneben) → Balken mit Namen
+  - 🔧 FIX IMPLEMENTED 2026-10-14
+  - MANUAL RETEST REQUIRED

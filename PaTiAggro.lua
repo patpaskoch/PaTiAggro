@@ -11,9 +11,9 @@ local aggroEvents = {} -- event -> registered (see Events)
 
 local WIDTH, BAR_WIDTH, PAD, LINE = 280, 252, UI.Spacing.MD, 18
 local THREAT_HEIGHT = 16
--- Test mode, tank: you hold the target (100 %, green) and a damage dealer is at 84 % of pulling (yellow "Next" line).
+-- Test mode, tank: you hold the target (100 %, green) and a damage dealer (TEST_PLAYER) is at 84 % of pulling
 -- Healer/Damage: one enemy attacks you (red AGGRO).
-local TEST = { threat = 100, next = { holder = { role = "DAMAGER" }, percent = 84, state = "WARNING" },
+local TEST = { threat = 100, next = { holder = { role = "DAMAGER", hasName = true }, percent = 84, state = "WARNING" },
     self = { state = "AGGRO", percent = 100, key = "TEST_ENEMY_3" } }
 
 local function say(key, ...)
@@ -79,6 +79,33 @@ nextWho:SetPoint("LEFT", nextLabel, "RIGHT", UI.Spacing.SM, 0)
 nextWho:SetPoint("RIGHT", nextPercent, "LEFT", -UI.Spacing.SM, 0)
 nextWho:SetJustifyH("LEFT")
 nextWho:SetWordWrap(false)
+
+-- Tank: "Next" as a small bar (owner 2026-10-14) — the player's name left, how far they are to pulling right
+-- (100 % = they take it). Healer/damage keep the text (nextWho) in the same line.
+local NEXT_BAR_HEIGHT = 12
+local nextBar = CreateFrame("StatusBar", nil, nextLine)
+nextBar:SetPoint("LEFT", nextLabel, "RIGHT", UI.Spacing.SM, 0)
+nextBar:SetPoint("RIGHT")
+nextBar:SetHeight(NEXT_BAR_HEIGHT)
+nextBar:SetStatusBarTexture(UI.WHITE)
+nextBar:SetMinMaxValues(0, 100)
+local nextBarBackground = nextBar:CreateTexture(nil, "BACKGROUND")
+nextBarBackground:SetAllPoints()
+UI.Paint(nextBarBackground, "SetColorTexture", "Panel")
+local nextBarPercent = nextBar:CreateFontString(nil, "OVERLAY", UI.Fonts.Muted)
+nextBarPercent:SetPoint("RIGHT", -UI.Spacing.XS, 0)
+nextBarPercent:SetJustifyH("RIGHT")
+local nextBarName = nextBar:CreateFontString(nil, "OVERLAY", UI.Fonts.Muted)
+nextBarName:SetPoint("LEFT", UI.Spacing.XS, 0)
+nextBarName:SetPoint("RIGHT", nextBarPercent, "LEFT", -UI.Spacing.XS, 0)
+nextBarName:SetJustifyH("LEFT")
+nextBarName:SetWordWrap(false)
+
+local function showNextBar(bar)
+    nextBar:SetShown(bar)
+    nextWho:SetShown(not bar)
+    nextPercent:SetShown(not bar)
+end
 
 -- Aggro block: "AGGRO  2 / 2", then up to Aggro.MAX_ROWS enemies you do not (safely) hold. It moves up when the
 -- warning line is hidden (placeBlock).
@@ -156,15 +183,22 @@ end
 
 local NEXT_COLOR = { WARNING = "Warning", DANGER = "Danger" }
 
--- Tank: "Next: Mage 92 %" only from NEXT_WARN on — a calm or unreadable next member is no news.
+-- The member's own name first (owner 2026-10-14: show the character who pulls), else the role.
+local function playerText(holder)
+    if holder and holder.hasName then return holder.name end
+    return memberText(holder)
+end
+
+-- Tank: "Next [Lyra ███ 92 %]" only from NEXT_WARN on — a calm or unreadable next member is no news.
 local function paintNext(info)
     local color = info and NEXT_COLOR[info.state]
     setLine(color ~= nil)
     if not color then return end
-    nextWho:SetText(memberText(info.holder))
-    nextWho:SetTextColor(UI.Color(color))
-    nextPercent:SetText(("%d %%"):format(info.percent))
-    nextPercent:SetTextColor(UI.Color(color))
+    showNextBar(true)
+    nextBar:SetValue(math.min(100, info.percent))
+    nextBar:SetStatusBarColor(UI.Color(color))
+    nextBarName:SetText(playerText(info.holder))
+    nextBarPercent:SetText(("%d %%"):format(info.percent))
 end
 
 -- The view of the last paint; nil until the first one. Labels change with it, numbers start fresh.
@@ -187,6 +221,7 @@ local function paintTarget()
         threat:SetValue(TEST.threat)
         paintBarText(L.TEST_TARGET, TEST.threat)
         paintBarColor("GOOD")
+        TEST.next.holder.name = L.TEST_PLAYER -- looked up at paint time (language)
         paintNext(TEST.next)
     elseif UnitExists("target") then
         local _, _, percent = UnitDetailedThreatSituation("player", "target")
@@ -247,6 +282,7 @@ local function paintSelf(enemies)
     setLine(text ~= nil)
     if not text then return end
     local color = SELF_COLOR[info.state]
+    showNextBar(false)
     nextWho:SetText(L[text])
     nextWho:SetTextColor(UI.Color(color))
     nextPercent:SetText("")

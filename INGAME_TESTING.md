@@ -229,3 +229,10 @@ Panel-Zeilen sind nicht klickbar (technisch blockiert, F17) und werden nicht get
   - Owner 2026-10-14: Design passt nicht zu PaTiHeal, Bereichsnamen zu groß → umgestellt
   - 🔧 FIX IMPLEMENTED 2026-10-14
   - MANUAL RETEST REQUIRED
+- [ ] PT-AGGRO-028 Nur Bereiche mit Inhalt: ohne Gegner kein AGGRO GESAMT, ohne feindliches Ziel kein AGGRO ZIEL, ohne
+  Problem-Gegner kein AGGRO TEAM; Fenster schrumpft ohne Lücke. „AGGRO ZIEL“ steht über den Balken; Bereichsnamen
+  etwas kleiner; über AGGRO TEAM mehr Abstand, unten weniger. „(Tank)“, „(Heiler)“ usw. und der Gegnername hellgrau
+  wie „PaTiAggro“ oben links
+  - Owner 2026-10-14: nur Aktives anzeigen, kleiner, Abstände, hellere Schrift → umgesetzt
+  - 🔧 FIX IMPLEMENTED 2026-10-14
+  - MANUAL RETEST REQUIRED

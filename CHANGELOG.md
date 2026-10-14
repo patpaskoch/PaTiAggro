@@ -38,6 +38,10 @@ History before this file: `git log`.
   Test mode shows 6 enemies: 4 held, 1 barely held, 1 on the healer. `/pt debug` shows which aggro APIs exist.
 - Tests for the collapsed state (default, migration keeps a saved value, restore defaults expands).
 ### Changed
+- Only sections with content are shown (owner 2026-10-14): AGGRO TOTAL hides with no enemies, AGGRO TARGET without
+  an enemy target, AGGRO TEAM without rows. Captions a little smaller; AGGRO TARGET's caption now above its bars; more
+  room above AGGRO TEAM, less below the last section. Roles in brackets and the enemy name in light grey like the
+  window title.
 - Section names as small accent captions like PaTiHeal's "TARGET" mark (owner 2026-10-14): `5 / 6` large with
   "AGGRO TOTAL" small beside it; "AGGRO NOW" is now **AGGRO TARGET**, its caption and the enemy name below the bars;
   "AGGRO TEAM" small above its rows.

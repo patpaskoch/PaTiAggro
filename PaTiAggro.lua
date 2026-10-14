@@ -11,7 +11,9 @@ local aggroEvents = {} -- event -> registered (see Events)
 
 local WIDTH, BAR_WIDTH, PAD, LINE = 280, 252, UI.Spacing.MD, 18
 local MEMBER_BAR = 14 -- height of one "AGGRO TARGET" bar inside its LINE
-local SECTION_GAP = UI.Spacing.LG + UI.Spacing.MD -- clear space between the three sections (owner 2026-10-14)
+-- Clear space before a section (owner 2026-10-14): AGGRO TEAM gets the most, so the enemy list stands apart.
+local GAP = { target = UI.Spacing.LG + UI.Spacing.SM, team = 2 * UI.Spacing.LG + UI.Spacing.SM }
+local BOTTOM = UI.Spacing.SM -- small space below the last section
 local MAX_CURRENT = 6 -- you, party1-4, pet
 
 -- Test mode. You (Brom) hold the test enemy, Lyra is at 84 % and Mira at 35 %. Names are looked up at paint time.
@@ -48,13 +50,16 @@ content:SetPoint("BOTTOMRIGHT")
 -- Section names are small captions in the accent colour, like PaTiHeal's "TARGET" mark (owner 2026-10-14: the same
 -- look in both addons). The values carry the weight, the captions only tell what they are.
 local CAPTION = 12 -- height of a caption line
+local CAPTION_SMALLER = 2 -- captions a little smaller than the muted text (owner 2026-10-14)
 local function newSection(titleKey)
     local section = CreateFrame("Frame", nil, content)
     section:SetHeight(LINE)
     section.title = section:CreateFontString(nil, "OVERLAY", UI.Fonts.Muted)
     UI.BindText(section.title, titleKey)
     UI.Paint(section.title, "SetTextColor", "Accent")
-    section.value = section:CreateFontString(nil, "OVERLAY", UI.Fonts.Muted)
+    local font, size, flags = section.title:GetFont()
+    if font and size then section.title:SetFont(font, size - CAPTION_SMALLER, flags) end
+    section.value = section:CreateFontString(nil, "OVERLAY", UI.Fonts.Text)
     section.value:SetJustifyH("RIGHT")
     section.value:SetWordWrap(false)
     return section
@@ -66,11 +71,13 @@ total.value:SetFontObject(UI.Fonts.Title)
 total.value:SetPoint("TOPLEFT", PAD, -1)
 total.value:SetJustifyH("LEFT")
 total.title:SetPoint("BOTTOMLEFT", total.value, "BOTTOMRIGHT", UI.Spacing.SM, 1)
--- AGGRO TARGET: the bars first, the caption small below them (placed in placeSections), the enemy name beside it.
+-- AGGRO TARGET: the caption small above the bars (owner 2026-10-14), the enemy name beside it.
 local now = newSection("AGGRO_TARGET")
+now.title:SetPoint("TOPLEFT", PAD, 0)
 now.value:SetPoint("LEFT", now.title, "RIGHT", UI.Spacing.SM, 0)
 now.value:SetPoint("RIGHT", now, "RIGHT", -PAD, 0)
 now.value:SetJustifyH("LEFT")
+UI.Paint(now.value, "SetTextColor", "TextMuted") -- the enemy name: light grey like the window title
 -- AGGRO TEAM: the caption small above the rows.
 local team = newSection("AGGRO_TEAM")
 team.title:SetPoint("TOPLEFT", PAD, 0)
@@ -81,7 +88,8 @@ local function newMemberText(parent, font)
     local name = parent:CreateFontString(nil, "OVERLAY", font)
     name:SetJustifyH("LEFT")
     name:SetWordWrap(false)
-    local tag = parent:CreateFontString(nil, "OVERLAY", UI.Fonts.Muted)
+    local tag = parent:CreateFontString(nil, "OVERLAY", UI.Fonts.Text)
+    UI.Paint(tag, "SetTextColor", "TextMuted") -- light grey like the window title (owner 2026-10-14)
     tag:SetPoint("LEFT", name, "RIGHT", UI.Spacing.XS, 0)
     tag:SetJustifyH("LEFT")
     tag:SetWordWrap(false)
@@ -93,7 +101,7 @@ local NAME_WIDTH = 110
 local members = {}
 for index = 1, MAX_CURRENT do
     local bar = CreateFrame("StatusBar", nil, now)
-    bar:SetPoint("TOPLEFT", PAD, -(index - 1) * LINE - (LINE - MEMBER_BAR) / 2)
+    bar:SetPoint("TOPLEFT", PAD, -CAPTION - (index - 1) * LINE - (LINE - MEMBER_BAR) / 2)
     bar:SetSize(BAR_WIDTH, MEMBER_BAR)
     bar:SetStatusBarTexture(UI.WHITE)
     bar:SetMinMaxValues(0, 100)
@@ -122,7 +130,8 @@ for index = 1, Aggro.MAX_ROWS do
     local marker = team:CreateTexture(nil, "ARTWORK")
     marker:SetPoint("TOPLEFT", PAD, -top - 3)
     marker:SetSize(3, LINE - 6)
-    local holderTag = team:CreateFontString(nil, "OVERLAY", UI.Fonts.Muted)
+    local holderTag = team:CreateFontString(nil, "OVERLAY", UI.Fonts.Text)
+    UI.Paint(holderTag, "SetTextColor", "TextMuted") -- light grey like the window title
     holderTag:SetPoint("TOPRIGHT", -PAD, -top - 2)
     holderTag:SetWidth(TAG_WIDTH)
     holderTag:SetJustifyH("LEFT")
@@ -149,19 +158,29 @@ local shownMembers, shownRows = 0, 0
 local lastNumbers = {} -- readable GUID -> row number of the last paint (Aggro.Number keeps numbers stable)
 local rowUnit = {}     -- row index -> nameplate token its number belongs to (cleared on plate events)
 
--- Sections stack with SECTION_GAP between them; AGGRO TARGET and AGGRO TEAM grow with their rows. Returns the height.
+local totalShown = false -- AGGRO TOTAL has something to say (paintAggro)
+
+-- Only sections with content are shown (owner 2026-10-14): AGGRO TOTAL without enemies, AGGRO TARGET without an enemy
+-- target and AGGRO TEAM without rows disappear. Shown ones stack with a gap before each (GAP); AGGRO TEAM gets more
+-- room above it. Returns the used height (0: nothing to show).
 local function placeSections()
-    now.title:ClearAllPoints()
-    now.title:SetPoint("TOPLEFT", PAD, -shownMembers * LINE - 1) -- the caption sits below the bars
-    local heights = { LINE + 2, shownMembers * LINE + CAPTION, CAPTION + shownRows * LINE }
-    local top = UI.Spacing.SM
-    for index, section in ipairs({ total, now, team }) do
-        section:ClearAllPoints()
-        section:SetPoint("TOPLEFT", content, "TOPLEFT", 0, -top)
-        section:SetPoint("TOPRIGHT", content, "TOPRIGHT", 0, -top)
-        top = top + heights[index] + SECTION_GAP
+    local layout = {
+        { section = total, shown = totalShown, height = LINE + 2, gap = 0 },
+        { section = now, shown = shownMembers > 0, height = CAPTION + shownMembers * LINE, gap = GAP.target },
+        { section = team, shown = shownRows > 0, height = CAPTION + shownRows * LINE, gap = GAP.team },
+    }
+    local top, used = UI.Spacing.SM, false
+    for _, entry in ipairs(layout) do
+        entry.section:SetShown(entry.shown)
+        if entry.shown then
+            if used then top = top + entry.gap end
+            entry.section:ClearAllPoints()
+            entry.section:SetPoint("TOPLEFT", content, "TOPLEFT", 0, -top)
+            entry.section:SetPoint("TOPRIGHT", content, "TOPRIGHT", 0, -top)
+            top, used = top + entry.height, true
+        end
     end
-    return top - SECTION_GAP
+    return used and top or 0
 end
 
 -- Paint (threat values may be secret: they only reach widgets) ----------------------------------------
@@ -298,14 +317,14 @@ end
 applyLayout = function()
     content:SetShown(not DB.collapsed)
     local height = placeSections()
-    window:SetHeight(DB.collapsed and UI.Sizes.HeaderHeight or UI.Sizes.HeaderHeight + height + PAD)
+    window:SetHeight(DB.collapsed and UI.Sizes.HeaderHeight or UI.Sizes.HeaderHeight + height + BOTTOM)
     window:SetTestMode(testMode)
 end
 
 local SELF_COLOR = { GOOD = "Text", WARNING = "Warning", DANGER = "Danger", AGGRO = "Danger", UNKNOWN = "TextMuted" }
 
 -- AGGRO TOTAL, healer/damage: your highest threat over your target and every enemy the group fights — healing
--- threat lands on all of them (Aggro.SelfWorst). "AGGRO on you!" as soon as one attacks you.
+-- threat lands on all of them (Aggro.SelfWorst). "AGGRO on you!" as soon as one attacks you. false: nothing to show.
 local function paintSelfTotal(enemies)
     local info = TEST_SELF
     if not testMode then
@@ -321,7 +340,7 @@ local function paintSelfTotal(enemies)
     if not info then
         total.value:SetText(L.AGGRO_NONE)
         total.value:SetTextColor(UI.Color("Text"))
-        return
+        return false
     end
     if info.state == "AGGRO" then
         total.value:SetText(L.SELF_AGGRO)
@@ -331,17 +350,19 @@ local function paintSelfTotal(enemies)
         total.value:SetText(("%d %%"):format(info.percent))
     end
     total.value:SetTextColor(UI.Color(SELF_COLOR[info.state]))
+    return true
 end
 
 local function paintAggro()
     local tank = role == "TANK"
     local enemies
     if testMode then enemies = tank and TEST_ENEMIES or TEST_ON_YOU else enemies = Threat.Scan() end
-    local summary
+    local summary, hasTotal
     if tank then
         summary = Aggro.Summarize(enemies)
+        hasTotal = summary.total > 0
     else
-        paintSelfTotal(enemies)
+        hasTotal = paintSelfTotal(enemies)
         summary = { rows = Aggro.OnYou(enemies) }
     end
     local count = math.min(#summary.rows, Aggro.MAX_ROWS)
@@ -401,8 +422,8 @@ local function paintAggro()
             row.holder:SetTextColor(UI.Color(color))
         end
     end
-    if count ~= shownRows then
-        shownRows = count
+    if count ~= shownRows or hasTotal ~= totalShown then
+        shownRows, totalShown = count, hasTotal
         applyLayout() -- no secure frames: resizing is fine in combat
     end
 end

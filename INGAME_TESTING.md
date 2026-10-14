@@ -193,3 +193,13 @@ Panel-Zeilen sind nicht klickbar (technisch blockiert, F17) und werden nicht get
   - Owner 2026-10-14: Zeile „Nächster: Schaden 84 %“ unklar (Rolle statt Name, eigene 100 % daneben) → Balken mit Namen
   - 🔧 FIX IMPLEMENTED 2026-10-14
   - MANUAL RETEST REQUIRED
+- [ ] PT-AGGRO-022 Reihenfolge: oben „AGGRO GESAMT 5 / 6“, darunter Ziel-Balken, dann „Nächster“-Balken (nur ab 70 %),
+  dann die Gegnerzeilen; keine Lücke
+  - Owner 2026-10-14: Gesamtzahl gehört nach oben → umgestellt
+  - 🔧 FIX IMPLEMENTED 2026-10-14
+  - MANUAL RETEST REQUIRED
+- [ ] PT-AGGRO-023 Gelbe Zeile (du hältst den Gegner noch knapp): rechts steht, wer ihn gleich übernimmt (Rolle oder
+  Name), sonst „fast weg“; `/paggro test` zeigt „Zombie → Schaden“ gelb
+  - Owner 2026-10-14: „Zombie knapp“ unverständlich → zeigt jetzt, wer gleich übernimmt
+  - 🔧 FIX IMPLEMENTED 2026-10-14
+  - MANUAL RETEST REQUIRED

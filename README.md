@@ -47,17 +47,17 @@ Klappt etwas nicht? Schreib einfach, bei welchem Schritt du hängst — am beste
 - **My role** (Settings): Auto, Tank, Healer or Damage. Auto uses the role WoW reports for you in the group; without
   one it shows the tank view. Never guessed from your class.
 
-**Tank view**
+**Tank view** (top to bottom)
+- **AGGRO TOTAL 5 / 6:** how many of the enemies your group fights you hold
 - **Threat bar:** your target's name on the left, your threat percent on the right. The colour comes from your threat
   status, not the percent (while you tank, WoW reports 100 % for you): green = you hold it, yellow = you hold it but
   someone has more threat, red = someone else has it. No target: an empty bar
-- **Next:** a small bar under the threat bar, only when it matters — the player (by name) closest to pulling your
-  target, from 70 %
+- **Next:** a small bar, only when it matters — the player (by name) closest to pulling your target, from 70 %
   (yellow), red from 90 %. Their percent is how far they are to taking it (100 % = they pull it); yours stays at
   100 % while you hold it — two different scales, both from WoW
-- **Aggro:** `AGGRO 5 / 6` plus up to four rows for enemies that need you:
-  red = lost, with who has it (role, else name, else "other player"), yellow = barely held, grey = unclear.
-  Unreadable data is shown as "unclear", never as held
+- **Rows:** up to four enemies that need you — red = lost, with who has it (role, else name, else "other player");
+  yellow = you still hold it but the named member is about to take it ("slipping" when WoW does not say who);
+  grey = unclear. Unreadable data is shown as "unclear", never as held
 - With **PaTiAlerts** installed (optional), the lost and barely held rows also appear there, with the same number
 
 **Healer / damage view**

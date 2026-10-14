@@ -56,10 +56,23 @@ local function holderOf(member)
     return { unit = member, role = role(member), name = name, hasName = isSecret(name) or name ~= nil }
 end
 
+-- Status 2 = you still tank it, but someone has more threat and is about to take it: that member (status 1 on it)
+-- is shown on the yellow row instead of a vague "slipping" (owner 2026-10-14).
+local function challengerOf(unit)
+    for _, member in ipairs(GROUP) do
+        if flag(UnitExists(member)) == true and situation(member, unit) == 1 then return holderOf(member) end
+    end
+    return nil
+end
+
 local function readEnemy(unit)
     local enemy = { unit = unit, name = UnitName(unit), playerStatus = situation("player", unit) }
     enemy.playerPercent = select(2, Threat.Self(unit)) -- your scaled percent (healer/damage view)
-    if enemy.playerStatus == 3 or enemy.playerStatus == 2 then return enemy end -- you hold it: no holder search
+    if enemy.playerStatus == 3 then return enemy end -- you hold it: no holder search
+    if enemy.playerStatus == 2 then
+        enemy.challenger = challengerOf(unit)
+        return enemy
+    end
     local candidate
     for _, member in ipairs(GROUP) do
         if flag(UnitExists(member)) == true then

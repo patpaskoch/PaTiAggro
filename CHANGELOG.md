@@ -38,6 +38,8 @@ History before this file: `git log`.
   Test mode shows 6 enemies: 4 held, 1 barely held, 1 on the healer. `/pt debug` shows which aggro APIs exist.
 - Tests for the collapsed state (default, migration keeps a saved value, restore defaults expands).
 ### Changed
+- New order (owner 2026-10-14): "AGGRO TOTAL 5 / 6" at the top, then the target bar, the "Next" bar and the enemy rows.
+  A yellow row ("barely held") now names the member about to take the enemy; without one it reads "slipping".
 - Tank "Next" is now a small bar with the player's name (owner 2026-10-14) instead of a text line; the percent is
   how far that player is to pulling (100 % = they take it).
 - Simpler display (owner 2026-10-14): no "Target:" line any more — the threat bar is at the top with the enemy's

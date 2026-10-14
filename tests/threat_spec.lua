@@ -187,3 +187,14 @@ describe("Threat.ZeroThreat", function()
         assert.is_false(ns.Threat.ZeroThreat("target"))
     end)
 end)
+
+describe("Threat.Scan slipping enemies", function()
+    it("names the member about to take an enemy you still tank (status 2)", function()
+        local ns = setup({ player = {}, party1 = { name = "Lyra", role = "DAMAGER" },
+            nameplate1 = { enemy = true, guid = "G1", name = "Zombie" } }, { nameplate1 = { player = 2, party1 = 1 } })
+        ns.Threat.PlateAdded("nameplate1")
+        local enemy = ns.Threat.Scan()[1]
+        assert.equal("DANGER", enemy.state)
+        assert.equal("DAMAGER", enemy.challenger.role)
+    end)
+end)

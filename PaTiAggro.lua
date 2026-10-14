@@ -38,7 +38,9 @@ content:SetPoint("BOTTOMRIGHT")
 -- Threat bar at the top (owner 2026-10-14: no separate target line): the enemy's name on the left, your percent on
 -- the right. The name may be secret (SetText only); the percent is written only when it is a readable number.
 -- The bar colour follows the state (paintBarColor), so it is not a static UI.Paint colour.
-local BAR_TOP = UI.Spacing.SM
+-- Order top to bottom (owner 2026-10-14): "AGGRO TOTAL 5 / 6", the target bar, the "Next" bar, the enemy rows.
+local HEADER_TOP = UI.Spacing.SM
+local BAR_TOP = HEADER_TOP + LINE
 local barBackground = content:CreateTexture(nil, "BACKGROUND")
 barBackground:SetPoint("TOPLEFT", PAD, -BAR_TOP)
 barBackground:SetSize(BAR_WIDTH, THREAT_HEIGHT)
@@ -107,23 +109,23 @@ local function showNextBar(bar)
     nextPercent:SetShown(not bar)
 end
 
--- Aggro block: "AGGRO  2 / 2", then up to Aggro.MAX_ROWS enemies you do not (safely) hold. It moves up when the
--- warning line is hidden (placeBlock).
+-- Header "AGGRO TOTAL 2 / 2" at the top; under the bars up to Aggro.MAX_ROWS enemies you do not (safely) hold. The rows
+-- move up when the "Next" line is hidden (placeBlock).
 local block = CreateFrame("Frame", nil, content)
 block:SetHeight(1)
-local BLOCK_TOP = { line = NEXT_TOP + LINE + UI.Spacing.SM, noLine = BAR_TOP + THREAT_HEIGHT + UI.Spacing.MD }
-local aggroLabel = block:CreateFontString(nil, "OVERLAY", UI.Fonts.Label)
-aggroLabel:SetPoint("TOPLEFT", PAD, 0)
-UI.BindText(aggroLabel, "AGGRO")
-local aggroSummary = block:CreateFontString(nil, "OVERLAY", UI.Fonts.Text)
-aggroSummary:SetPoint("TOPRIGHT", -PAD, 0)
+local BLOCK_TOP = { line = NEXT_TOP + LINE + UI.Spacing.XS, noLine = BAR_TOP + THREAT_HEIGHT + UI.Spacing.SM }
+local aggroLabel = content:CreateFontString(nil, "OVERLAY", UI.Fonts.Label)
+aggroLabel:SetPoint("TOPLEFT", PAD, -HEADER_TOP - 2)
+UI.BindText(aggroLabel, "AGGRO_TOTAL")
+local aggroSummary = content:CreateFontString(nil, "OVERLAY", UI.Fonts.Text)
+aggroSummary:SetPoint("TOPRIGHT", -PAD, -HEADER_TOP - 2)
 aggroSummary:SetJustifyH("RIGHT")
 
 local HOLDER_WIDTH, NUMBER_WIDTH = 96, 12
 local STATE_COLOR = { LOST = "Danger", DANGER = "Warning", UNKNOWN = "TextMuted" }
 local rows = {}
 for index = 1, Aggro.MAX_ROWS do
-    local top = index * LINE
+    local top = (index - 1) * LINE
     local marker = block:CreateTexture(nil, "ARTWORK")
     marker:SetPoint("TOPLEFT", PAD, -top - 3)
     marker:SetSize(3, LINE - 6)
@@ -210,7 +212,7 @@ local function updateRole()
     role = new
     local tank = role == "TANK"
     UI.BindText(nextLabel, tank and "NEXT" or "SELF_STATE")
-    UI.BindText(aggroLabel, tank and "AGGRO" or "ON_YOU")
+    UI.BindText(aggroLabel, tank and "AGGRO_TOTAL" or "ON_YOU")
     lastNumbers = {}
 end
 
@@ -294,7 +296,8 @@ local TEST_ENEMIES = {
     { key = "TEST_ENEMY_1", state = "CONTROLLED" }, { key = "TEST_ENEMY_2", state = "CONTROLLED" },
     { key = "TEST_ENEMY_3", state = "LOST", holder = { role = "HEALER" }, unit = "nameplate3", guid = "TEST-3" },
     { key = "TEST_ENEMY_4", state = "CONTROLLED" },
-    { key = "TEST_ENEMY_5", state = "DANGER", unit = "nameplate5", guid = "TEST-5" },
+    { key = "TEST_ENEMY_5", state = "DANGER", challenger = { role = "DAMAGER" }, unit = "nameplate5",
+        guid = "TEST-5" },
     { key = "TEST_ENEMY_6", state = "CONTROLLED" },
 }
 
@@ -306,7 +309,9 @@ local TEST_ON_YOU = {
 
 local function holderText(enemy)
     if enemy.onYou then return L.YOU end
-    if enemy.state == "DANGER" then return L.AGGRO_DANGER end
+    if enemy.state == "DANGER" then -- yellow: you still hold it, this member is about to take it
+        return enemy.challenger and memberText(enemy.challenger) or L.AGGRO_DANGER
+    end
     if enemy.state == "UNKNOWN" then return L.AGGRO_UNKNOWN end
     return memberText(enemy.holder)
 end
@@ -336,7 +341,7 @@ end
 applyLayout = function()
     content:SetShown(not DB.collapsed)
     window:SetHeight(DB.collapsed and UI.Sizes.HeaderHeight
-        or UI.Sizes.HeaderHeight + blockTop() + LINE + shownRows * LINE + PAD)
+        or UI.Sizes.HeaderHeight + blockTop() + shownRows * LINE + PAD)
     window:SetTestMode(testMode)
 end
 

@@ -73,6 +73,8 @@ content are shown: no AGGRO TOTAL without enemies, no AGGRO TARGET without an en
   of them) — white below 70 %, yellow from 70 %, red from 90 %, `AGGRO on you!` as soon as an enemy attacks you
 
 **AGGRO TARGET** — the caption with your target's name above the bars
+- As healer or damage: **"not the tank's target"** in yellow on the right when you have another enemy targeted than
+  the tank (the tank is the member with the WoW role Tank). Only a hint — nothing is targeted for you
 - You and every group member (and pet) on its threat list, sorted: who has the aggro first, then by percent
 - Each as `Name (Role)` — the role when WoW assigned one, else the class
 - The one who has it shows "has aggro": green when that is right (you as tank, or the tank when you are not),

@@ -245,5 +245,9 @@ Panel-Zeilen sind nicht klickbar (technisch blockiert, F17) und werden nicht get
   keine „x / y“-Anzeige, sondern dein eigener Wert (z. B. „35 %“) und „AUF DIR“; `/paggro debug` zeigt „other tank
   true · view DAMAGER“. Ganz ohne Rollen: Tank-Ansicht, mit „Meine Rolle: Heiler“ dein eigener Wert
   - Owner 2026-10-14: „0 / 5“ als Heiler → Korrektur
+- [ ] PT-AGGRO-030 Als Heiler/DD (anderer Spieler mit WoW-Rolle Tank): anderen Gegner anvisieren als der Tank → rechts
+  neben „AGGRO ZIEL“ gelb „nicht das Ziel des Tanks“; denselben Gegner → Hinweis weg; Tank wechselt das Ziel → Hinweis
+  folgt sofort; ohne Tank, ohne Ziel oder freundliches Ziel → kein Hinweis; als Tank nie; langer Gegnername überlappt nicht
+  - Owner 2026-10-17: Hinweis statt Tankziel in PaTiAggro
   - 🔧 FIX IMPLEMENTED 2026-10-14
   - MANUAL RETEST REQUIRED

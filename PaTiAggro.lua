@@ -75,7 +75,14 @@ total.title:SetPoint("BOTTOMLEFT", total.value, "BOTTOMRIGHT", UI.Spacing.SM, 1)
 local now = newSection("AGGRO_TARGET")
 now.title:SetPoint("TOPLEFT", PAD, 0)
 now.value:SetPoint("LEFT", now.title, "RIGHT", UI.Spacing.SM, 0)
-now.value:SetPoint("RIGHT", now, "RIGHT", -PAD, 0)
+-- Hint on the right of the caption line (owner 2026-10-17): healer/damage attacking another enemy than the tank.
+now.hint = now:CreateFontString(nil, "OVERLAY", UI.Fonts.Text)
+now.hint:SetPoint("TOPRIGHT", -PAD, 0)
+now.hint:SetJustifyH("RIGHT")
+UI.Paint(now.hint, "SetTextColor", "Warning")
+UI.BindText(now.hint, "NOT_TANK_TARGET")
+now.hint:Hide()
+now.value:SetPoint("RIGHT", now, "RIGHT", -PAD, 0) -- paintHint makes room for the hint while it is shown
 now.value:SetJustifyH("LEFT")
 UI.Paint(now.value, "SetTextColor", "TextMuted") -- the enemy name: light grey like the window title
 -- AGGRO TEAM: the caption small above the rows.
@@ -227,6 +234,17 @@ end
 
 local applyLayout -- defined below; the sections change the window height
 
+-- "Not the tank's target": only in the healer/damage view; test mode shows it there as an example.
+local function paintHint()
+    local show = role ~= nil and role ~= "TANK" and (testMode or Threat.OffTankTarget() == true)
+    now.hint:SetShown(show)
+    if show then
+        now.value:SetPoint("RIGHT", now.hint, "LEFT", -UI.Spacing.SM, 0)
+    else
+        now.value:SetPoint("RIGHT", now, "RIGHT", -PAD, 0)
+    end
+end
+
 -- AGGRO TARGET: you and your group on your target.
 local function paintNow()
     local list
@@ -240,6 +258,7 @@ local function paintNow()
         list = {}
         now.value:SetText(L.AGGRO_NONE)
     end
+    paintHint()
     local current = Aggro.CurrentRows(list, MAX_CURRENT)
     for index, member in ipairs(members) do
         local row = current[index]
@@ -647,7 +666,10 @@ events:SetScript("OnEvent", function(_, event, unit)
     elseif event == "PLAYER_ENTERING_WORLD" then
         paintAll()
     elseif event == "UNIT_TARGET" then
-        if PARTY[unit] then requestScan() end -- fires for every unit (nameplates too); only party targets matter
+        if PARTY[unit] then -- fires for every unit (nameplates too); only party targets matter
+            requestScan()
+            paintHint() -- the tank changed its target
+        end
     elseif event == "GROUP_ROSTER_UPDATE" or event == "PLAYER_ROLES_ASSIGNED" then
         paintAll() -- the view follows your group role (AUTO); AGGRO TARGET reads the group
         requestScan()

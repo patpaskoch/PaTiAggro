@@ -202,3 +202,34 @@ describe("Threat.Scan slipping enemies", function()
         assert.equal("DAMAGER", enemy.challenger.role)
     end)
 end)
+
+describe("Threat.OffTankTarget", function()
+    local function withSame(same)
+        _G.UnitIsUnit = function(a, b) return same(a, b) end
+    end
+
+    it("true when you attack another enemy than the tank, false on the same one", function()
+        local ns = setup({ player = {}, party1 = { role = "TANK" }, party1target = { enemy = true },
+            target = { enemy = true } })
+        withSame(function() return false end)
+        assert.is_true(ns.Threat.OffTankTarget())
+        withSame(function(a, b) return a == "target" and b == "party1target" end)
+        assert.is_false(ns.Threat.OffTankTarget())
+    end)
+
+    it("nil without a tank, without a tank target, with a friendly target or an unreadable answer", function()
+        local ns = setup({ player = {}, party1 = { role = "HEALER" }, target = { enemy = true } })
+        withSame(function() return false end)
+        assert.is_nil(ns.Threat.OffTankTarget())
+        ns = setup({ player = {}, party1 = { role = "TANK" }, target = { enemy = true } })
+        withSame(function() return false end)
+        assert.is_nil(ns.Threat.OffTankTarget())
+        ns = setup({ player = {}, party1 = { role = "TANK" }, party1target = { enemy = true }, target = {} })
+        withSame(function() return false end)
+        assert.is_nil(ns.Threat.OffTankTarget())
+        ns = setup({ player = {}, party1 = { role = "TANK" }, party1target = { enemy = true },
+            target = { enemy = true } })
+        withSame(function() return SECRET end)
+        assert.is_nil(ns.Threat.OffTankTarget())
+    end)
+end)

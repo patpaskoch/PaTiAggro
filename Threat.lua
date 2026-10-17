@@ -189,3 +189,20 @@ function Threat.OtherTank()
     end
     return false
 end
+
+-- Whether your target is another enemy than the tank's (owner 2026-10-17: a hint for healer and damage). true / false;
+-- nil when there is nothing to compare — no other tank, the tank or you without an enemy target — or a value is
+-- unreadable. Compares unit tokens only (UnitIsUnit), never names.
+function Threat.OffTankTarget()
+    if not UnitIsUnit or not isEnemy("target") then return nil end
+    for _, member in ipairs(GROUP) do
+        if member ~= "pet" and flag(UnitExists(member)) == true and role(member) == "TANK" then
+            local token = member .. "target"
+            if flag(UnitExists(token)) ~= true then return nil end
+            local same = flag(UnitIsUnit("target", token))
+            if same == nil then return nil end
+            return not same
+        end
+    end
+    return nil
+end

@@ -251,3 +251,5 @@ Panel-Zeilen sind nicht klickbar (technisch blockiert, F17) und werden nicht get
   - Owner 2026-10-17: Hinweis statt Tankziel in PaTiAggro
   - 🔧 FIX IMPLEMENTED 2026-10-14
   - MANUAL RETEST REQUIRED
+  - ❌ FAIL 2026-10-18
+  - Owner: in der Abhak-Liste „Geht nicht“, ohne Notiz → Nachfrage

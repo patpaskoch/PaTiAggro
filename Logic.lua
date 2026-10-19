@@ -28,8 +28,9 @@ function Logic.Migrate(db)
     end
     -- A broken scale would make SetScale fail on login: only a sane number is kept (saved values elsewhere stay).
     if type(db.scale) ~= "number" or db.scale < 0.5 or db.scale > 2 then db.scale = Logic.DEFAULTS.scale end
-    -- Theme: one of the three PaTiShared themes; a typo or an old value falls back to the default look.
-    if db.theme ~= "default" and db.theme ~= "woforever" and db.theme ~= "dracula" then db.theme = "default" end
+    -- The PaTiShared themes (Soft Fantasy since 2026-10-19); a typo or an old value falls back to the default look.
+    local knownTheme = { default = true, woforever = true, dracula = true, softfantasy = true }
+    if not knownTheme[db.theme] then db.theme = "default" end
     if not Logic.ROLE_SET[db.myRole] then db.myRole = "AUTO" end
     db.schema = Logic.SCHEMA
     return db

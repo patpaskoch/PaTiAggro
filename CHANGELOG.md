@@ -9,6 +9,8 @@ History before this file: `git log`.
   Auto, another member assigned as tank now means you are not the tank → your own threat. Without any role the tank
   view stays (never guessed from the class); set "My role" once per character. `/paggro debug` shows "other tank".
 ### Added
+- Theme **Soft Fantasy** (PaTiShared, owner wish 2026-10-19): calm slate blue, grey and violet with a muted
+  lavender accent — the fourth choice in the settings and in PaTiSuite.
 - Hint "not the tank's target" (owner 2026-10-17): in the healer/damage view, the AGGRO TARGET caption line shows it in
   yellow when your enemy target is another one than the target of the member with the WoW role Tank. Compares unit
   tokens (`UnitIsUnit`); nothing to compare (no tank, no target, unreadable) shows nothing. The tank target itself stays

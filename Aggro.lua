@@ -179,18 +179,3 @@ function Aggro.SelfWorst(results)
     if not worst then return nil end
     return { state = worst.state, percent = worst.percent, name = worst.name, onYou = onYou }
 end
-
--- Healer/Damage rows: the enemies that attack you (your status 2/3), shown red like a lost enemy. Copies — the
--- scanned enemies stay as they are.
-function Aggro.OnYou(enemies)
-    local rows = {}
-    for _, enemy in ipairs(enemies) do
-        if enemy.playerStatus == 2 or enemy.playerStatus == 3 then
-            local row = {}
-            for key, value in pairs(enemy) do row[key] = value end
-            row.state, row.onYou = "LOST", true
-            rows[#rows + 1] = row
-        end
-    end
-    return rows
-end

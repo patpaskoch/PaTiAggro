@@ -4,7 +4,7 @@
 
 Aggro for every role in World of Warcraft: Forever (Interface 16001). As a **tank** you see your threat on your
 target, who pulls it next and which enemies you lost; as a **healer or damage dealer** you see how close you are to
-pulling and which enemies attack you. Display only — it never targets or taunts.
+pulling and who has the aggro on your target. Display only — it never targets or taunts.
 
 > Formerly **PaTiTank** (renamed 2026-10-14). Status: 0.1.0, in development, not yet released. Not yet tested in game.
 > Coming from PaTiTank: delete the old `PaTiTank` folder in `AddOns`; your PaTiTank settings (position, size …) start
@@ -72,7 +72,8 @@ content are shown: no AGGRO TOTAL without enemies, no AGGRO TARGET without an en
 **AGGRO TOTAL**
 - Tank: how many of the enemies your group fights you hold (`5 / 6`)
 - Healer/damage: your highest threat over your target and every enemy the group fights (healing threat lands on all
-  of them) — white below 70 %, yellow from 70 %, red from 90 %, `AGGRO on you!` as soon as an enemy attacks you
+  of them) — white below 70 %, yellow from 70 %, red from 90 %. An enemy that attacks you shows only in
+  AGGRO TARGET (the red "has aggro" bar), not a second time here
 
 **AGGRO TARGET** — the caption with your target's name above the bars
 - As healer or damage: **"not the tank's target"** in yellow on the right when you have another enemy targeted than
@@ -83,17 +84,16 @@ content are shown: no AGGRO TOTAL without enemies, no AGGRO TARGET without an en
   red when not. Everyone else shows how far they are to taking it (100 % = they pull it). An enemy nobody attacked
   yet shows you with 0 %
 
-**AGGRO TEAM** (healer/damage: **ON YOU**)
+**AGGRO TEAM** (tank only)
 - Tank: up to four enemies that need you — red = lost, with `Name (Role)` of who has it; yellow = you still hold it
   but `Name (Role)` is about to take it ("slipping" when WoW does not say who); grey = unclear.
   Unreadable data is shown as "unclear", never as held
-- Healer/damage: the enemies that attack you
 - With **PaTiAlerts** installed (optional), the tank's lost and slipping rows also appear there, with the same number
 
 **Both views**
 - Enemies come from your target, visible nameplates and your party's targets
 - **Numbered nameplates:** every AGGRO TEAM row gets a number (`1 Ghoul`), and the same number stands above
-  that enemy's nameplate — red = lost / on you, yellow = barely held, grey = unclear. Two enemies with the same name
+  that enemy's nameplate — red = lost, yellow = barely held, grey = unclear. Two enemies with the same name
   are told apart by their number. Click the nameplate with that number to target the enemy.
   PaTiAggro never targets or taunts on its own
 - A row without a number has no nameplate that can be named safely right now (e.g. the enemy is off screen) —

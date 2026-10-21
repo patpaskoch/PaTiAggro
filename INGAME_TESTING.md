@@ -157,10 +157,11 @@ Panel-Zeilen sind nicht klickbar (technisch blockiert, F17) und werden nicht get
 ## Rollen
 
 > Seit 2026-10-14 (drei Bereiche): Die Tank-Farbe steht am Balken „hat Aggro“ in AGGRO ZIEL; die Bedrohung von
-> Heiler/Schaden steht rechts bei AGGRO GESAMT; „AUF DIR“ ist der dritte Bereich.
+> Heiler/Schaden steht rechts bei AGGRO GESAMT; der dritte Bereich (AGGRO TEAM) nur beim
+> Tank; seit 2026-10-21 kein Bereich „AUF DIR“ mehr (Owner: Aggro auf dir stand dreimal da).
 
-- [ ] PT-AGGRO-010 Einstellung „Meine Rolle“: Auto / Tank / Heiler / Schaden; Wechsel sofort sichtbar (Beschriftungen,
-  Block „AGGRO“ ↔ „AUF DIR“), bleibt nach `/reload`
+- [ ] PT-AGGRO-010 Einstellung „Meine Rolle“: Auto / Tank / Heiler / Schaden; Wechsel sofort sichtbar (Beschriftungen;
+  Block AGGRO TEAM nur beim Tank), bleibt nach `/reload`
   - MANUAL RETEST REQUIRED
 - [ ] PT-AGGRO-011 Auto in der Gruppe mit zugewiesener Rolle (Heiler/Schaden) zeigt die passende Ansicht; ohne Rolle die
   Tank-Ansicht
@@ -171,14 +172,16 @@ Panel-Zeilen sind nicht klickbar (technisch blockiert, F17) und werden nicht get
 - [ ] PT-AGGRO-013 Heiler/Schaden: „Deine Bedrohung (höchste)“ steigt beim Heilen/Schaden; „Du: ruhig“ unter 70 %,
   „steigt“ ab 70 %, „ziehst gleich“ ab 90 % (Farbe passend)
   - MANUAL RETEST REQUIRED
-- [ ] PT-AGGRO-014 Heiler/Schaden: Ein Gegner greift dich an → „AGGRO auf dir!“, voller roter Balken, Zeile im Block
+- ~~PT-AGGRO-014 Heiler/Schaden: Ein Gegner greift dich an → „AGGRO auf dir!“, voller roter Balken, Zeile im Block~~
   „AUF DIR“ mit „→ dich“ und Nummer am Namensschild; Aggro weg → Zeile und Nummer verschwinden
   - MANUAL RETEST REQUIRED
+  - RETIRED 2026-10-21 – Aggro auf dir nur noch als roter Balken (Owner), ersetzt durch PT-AGGRO-031
 - [ ] PT-AGGRO-015 Heiler ohne Ziel: Bedrohung wird trotzdem angezeigt (Feind-Namensschilder an, Taste V)
   - MANUAL RETEST REQUIRED
-- [ ] PT-AGGRO-016 `/paggro test` mit Rolle Heiler oder Schaden: „AGGRO auf dir!“ und eine Zeile Ghul → dich;
+- ~~PT-AGGRO-016 `/paggro test` mit Rolle Heiler oder Schaden: „AGGRO auf dir!“ und eine Zeile Ghul → dich;~~
   mit Rolle Tank die bisherige Testansicht (Balken grün 100 %, „Nächster: Schaden 84 %“)
   - MANUAL RETEST REQUIRED
+  - RETIRED 2026-10-21 – kein Bereich „AUF DIR“ mehr (Owner), ersetzt durch PT-AGGRO-032
 
 ## Anzeige (vereinfacht 2026-10-14)
 
@@ -191,7 +194,7 @@ Panel-Zeilen sind nicht klickbar (technisch blockiert, F17) und werden nicht get
   - MANUAL RETEST REQUIRED
   - RETIRED 2026-10-14 – Anzeige in drei Bereiche umgebaut (Owner), ersetzt durch PT-AGGRO-024–026
 - [ ] PT-AGGRO-019 Aggro-Block kurz: links „AGGRO“, rechts nur „2 / 2“ (ohne „unter Kontrolle“); Heiler/Schaden:
-  „AUF DIR“ und rechts die Anzahl
+  kein solcher Block (seit 2026-10-21)
   - MANUAL RETEST REQUIRED
 - [ ] PT-AGGRO-020 Gegner im Ziel, noch nicht angegriffen: Balken zeigt Namen und „0 %“; freundliches Ziel: keine Zahl
   - Owner 2026-10-14: bei nicht angegriffenem Ziel stand keine Zahl statt „0 %“ → ❌ FAIL 2026-10-14
@@ -242,7 +245,7 @@ Panel-Zeilen sind nicht klickbar (technisch blockiert, F17) und werden nicht get
   - 🔧 FIX IMPLEMENTED 2026-10-14
   - MANUAL RETEST REQUIRED
 - [ ] PT-AGGRO-029 Als Heiler oder DD mit „Meine Rolle: Auto“ in einer Gruppe, in der nur der Tank eine WoW-Rolle hat:
-  keine „x / y“-Anzeige, sondern dein eigener Wert (z. B. „35 %“) und „AUF DIR“; `/paggro debug` zeigt „other tank
+  keine „x / y“-Anzeige, sondern dein eigener Wert (z. B. „35 %“); `/paggro debug` zeigt „other tank
   true · view DAMAGER“. Ganz ohne Rollen: Tank-Ansicht, mit „Meine Rolle: Heiler“ dein eigener Wert
   - Owner 2026-10-14: „0 / 5“ als Heiler → Korrektur
 - [ ] PT-AGGRO-030 Als Heiler/DD (anderer Spieler mit WoW-Rolle Tank): anderen Gegner anvisieren als der Tank → rechts

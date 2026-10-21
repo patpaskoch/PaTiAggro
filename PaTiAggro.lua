@@ -218,7 +218,6 @@ local function updateRole()
     local new = Logic.EffectiveRole(DB.myRole, Threat.PlayerRole(), Threat.OtherTank())
     if new == role then return end
     role = new
-    UI.BindText(team.title, role == "TANK" and "AGGRO_TEAM" or "ON_YOU")
     lastNumbers = {}
 end
 
@@ -289,15 +288,9 @@ local TEST_ENEMIES = {
     { key = "TEST_ENEMY_6", state = "CONTROLLED" },
 }
 
--- Healer/Damage test: one enemy attacks you.
-local TEST_ON_YOU = {
-    { key = "TEST_ENEMY_3", playerStatus = 3, unit = "nameplate3", guid = "TEST-3" },
-    { key = "TEST_ENEMY_1", playerStatus = 0 },
-}
-
 -- Right side of an AGGRO TEAM row: who has it (red), who is about to take it (yellow), or a state word.
 local function paintHolder(row, enemy)
-    local word = (enemy.onYou and L.YOU) or (enemy.state == "UNKNOWN" and L.AGGRO_UNKNOWN)
+    local word = (enemy.state == "UNKNOWN" and L.AGGRO_UNKNOWN)
         or (enemy.state == "DANGER" and not enemy.challenger and L.AGGRO_DANGER) or nil
     if word then
         row.holder:SetText(word)
@@ -343,7 +336,8 @@ end
 local SELF_COLOR = { GOOD = "Text", WARNING = "Warning", DANGER = "Danger", AGGRO = "Danger", UNKNOWN = "TextMuted" }
 
 -- AGGRO TOTAL, healer/damage: your highest threat over your target and every enemy the group fights — healing
--- threat lands on all of them (Aggro.SelfWorst). "AGGRO on you!" as soon as one attacks you. false: nothing to show.
+-- threat lands on all of them (Aggro.SelfWorst). Only the percent (owner 2026-10-21: an enemy on you showed in three
+-- places): the red "has aggro" bar in AGGRO TARGET is the one warning. false: nothing to show.
 local function paintSelfTotal(enemies)
     local info = TEST_SELF
     if not testMode then
@@ -361,9 +355,7 @@ local function paintSelfTotal(enemies)
         total.value:SetTextColor(UI.Color("Text"))
         return false
     end
-    if info.state == "AGGRO" then
-        total.value:SetText(L.SELF_AGGRO)
-    elseif info.state == "UNKNOWN" or not info.percent then
+    if info.state == "UNKNOWN" or not info.percent then
         total.value:SetText(L.AGGRO_UNKNOWN)
     else
         total.value:SetText(("%d %%"):format(info.percent))
@@ -375,14 +367,14 @@ end
 local function paintAggro()
     local tank = role == "TANK"
     local enemies
-    if testMode then enemies = tank and TEST_ENEMIES or TEST_ON_YOU else enemies = Threat.Scan() end
+    if testMode then enemies = tank and TEST_ENEMIES or {} else enemies = Threat.Scan() end
     local summary, hasTotal
     if tank then
         summary = Aggro.Summarize(enemies)
         hasTotal = summary.total > 0
     else
         hasTotal = paintSelfTotal(enemies)
-        summary = { rows = Aggro.OnYou(enemies) }
+        summary = { rows = {} } -- no list of the enemies on you (owner 2026-10-21): the AGGRO TARGET bar shows it
     end
     local count = math.min(#summary.rows, Aggro.MAX_ROWS)
     local visible = {}
@@ -412,10 +404,7 @@ local function paintAggro()
         local ok, err = pcall(api.Sync, "PaTiAggro", alerts)
         if not ok then alertsError = tostring(err):sub(1, 120) end -- /paggro debug only; PaTiAggro keeps running
     end
-    if not tank then
-        team.value:SetText(tostring(#summary.rows))
-        team.value:SetTextColor(UI.Color(count == 0 and "Text" or "Danger"))
-    else
+    if tank then
         total.value:SetText(summary.total == 0 and L.AGGRO_NONE
             or L.AGGRO_CONTROLLED:format(summary.held, summary.total))
         total.value:SetTextColor(UI.Color(summary.held < summary.total and "Warning" or "Text"))

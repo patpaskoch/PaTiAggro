@@ -5,6 +5,9 @@ History before this file: `git log`.
 
 ## [Unreleased]
 ### Changed
+- Healer/damage view: an enemy on you shows once (owner 2026-10-21: it stood in three places) — as the red
+  "has aggro" bar in AGGRO TARGET. AGGRO TOTAL shows only your percent (no "AGGRO on you!"), and the "ON YOU" list
+  with its nameplate numbers is gone.
 - README: the install guide is in English (it was German, owner 2026-10-20) and is the only one; the short
   "Installation" section with the same steps is gone.
 ### Fixed

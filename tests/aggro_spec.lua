@@ -206,17 +206,3 @@ describe("Aggro.SelfWorst", function()
         assert.equal("DANGER", Aggro.SelfWorst({ { state = "DANGER", percent = 92 }, { state = "UNKNOWN" } }).state)
     end)
 end)
-
-describe("Aggro.OnYou", function()
-    it("lists the enemies that attack you as red rows, leaving the scan untouched", function()
-        local Aggro = load()
-        local enemies = { { name = "A", playerStatus = 3, state = "CONTROLLED" }, { name = "B", playerStatus = 0 },
-            { name = "C", playerStatus = 2, state = "DANGER" } }
-        local rows = Aggro.OnYou(enemies)
-        assert.equal(2, #rows)
-        assert.equal("A", rows[1].name)
-        assert.equal("LOST", rows[1].state)
-        assert.is_true(rows[2].onYou)
-        assert.equal("CONTROLLED", enemies[1].state)
-    end)
-end)

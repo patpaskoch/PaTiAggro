@@ -4,6 +4,11 @@ Format: `## [Unreleased]` / `## [x.y.z] - YYYY-MM-DD` with Added, Changed, Fixed
 History before this file: `git log`.
 
 ## [Unreleased]
+
+## [0.1.0-beta.1] - 2026-11-06
+
+**Installation-test pre-release:** Not yet validated in the live WoW Forever client. Intended for the owner's fresh-install test only; report bugs on GitHub.
+
 ### Changed
 - Healer/damage view: an enemy on you shows once (owner 2026-10-21: it stood in three places) — as the red
   "has aggro" bar in AGGRO TARGET. AGGRO TOTAL shows only your percent (no "AGGRO on you!"), and the "ON YOU" list

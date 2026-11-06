@@ -30,8 +30,6 @@ Whether you're tanking, healing or dealing damage, knowing who has aggro makes a
 2. 📂 **Extract & Copy** – Right-click the ZIP, select **Extract All**, then copy the extracted `PaTiAggro` folder into the WoW Forever client's `Interface/AddOns/` folder. No renaming is needed.
 3. ☑️ **Enable in Game** – Start WoW, open the **AddOns** menu at character selection, tick **PaTiAggro**, and click **OK**.
 
-**Upgrading from PaTiTank?** Remove the old `PaTiTank` addon folder to avoid loading both addons.
-
 ## Getting Started
 
 - `/paggro test` shows the display with example enemies — the tank view or, with "My role" set to Healer or Damage,
@@ -45,14 +43,6 @@ Whether you're tanking, healing or dealing damage, knowing who has aggro makes a
 `/paggro settings` or ••• → Settings: language, my role, scale, window lock, numbers on nameplates on/off (off: no
 numbers at all).
 - **Window:** panel opacity (30–100 %)
-
-## Important notes
-
-> **Installation-test beta available:** [Download the current ZIP from Releases](https://github.com/patpaskoch/PaTiAggro/releases). This is an unverified preview for testing the installation, not a stable release.
-
-> Formerly **PaTiTank** (renamed 2026-10-14). Status: 0.1.0, in development, not yet stable. Not yet tested in game.
-> Coming from PaTiTank: delete the old `PaTiTank` folder in `AddOns`; your PaTiTank settings (position, size …) start
-> fresh once.
 
 ## Feature details
 
@@ -123,7 +113,7 @@ Each one is installed on its own and works on its own; none of them is needed by
 - [PaTiGroup](https://github.com/patpaskoch/PaTiGroup) – party awareness: tank, healer, roles and the tank's target
 - [PaTiLead](https://github.com/patpaskoch/PaTiLead) – lead the group: raid markers, ready check and pull timer
 - [PaTiQuest](https://github.com/patpaskoch/PaTiQuest) – selected quest and its objectives
-- [PaTiDungeon](https://github.com/patpaskoch/PaTiDungeon) – instance, group and combat status
+- [PaTiDungeon](https://github.com/patpaskoch/PaTiDungeon) – dungeon overview and a hand-drawn map for each instance
 - [PaTiSocial](https://github.com/patpaskoch/PaTiSocial) – "Party Social": quick emote and message buttons
 - [PaTiAlerts](https://github.com/patpaskoch/PaTiAlerts) – one window for open problems
 
@@ -135,7 +125,7 @@ Each one is installed on its own and works on its own; none of them is needed by
 
 ## Commands
 
-`/paggro` or `/patiaggro` (for now also `/pt`, the old PaTiTank command) — alone: show/hide · `settings` · `test` ·
+`/paggro` or `/patiaggro` (also `/pt`) — alone: show/hide · `settings` · `test` ·
 `show` · `hide` · `lock` · `unlock` · `reset` (position) · `debug` (threat APIs, your role and the view) · `version`
 
 ## Known limitations

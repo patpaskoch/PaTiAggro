@@ -10,41 +10,15 @@ pulling and who has the aggro on your target. Display only — it never targets 
 > Coming from PaTiTank: delete the old `PaTiTank` folder in `AddOns`; your PaTiTank settings (position, size …) start
 > fresh once.
 
-## Install in 4 steps
+## Installation
 
-### 1. Download
-At the top of this page click the green **`<> Code`** button → at the very bottom **Download ZIP**.
-The file `PaTiAggro-main.zip` lands in your **Downloads** folder.
+![PaTiAggro – three-step installation guide](assets/installation_en.svg)
 
-### 2. Open the AddOns folder
-Open Battle.net → choose **World of Warcraft** → choose the version **WoW Forever** at the top →
-click the **gear** next to "Play" → **Show in Explorer**.
-In the window that opens, double-click one after the other: **`_classic_beta_`** → **`Interface`** → **`AddOns`**.
-WoW Forever lives in the **`_classic_beta_`** folder, even when `_retail_` or `_classic_` sit next to it (those are
-other WoW versions). If `_classic_beta_` opens right away, continue with `Interface`.
-(No `AddOns` folder yet: right-click the empty area → **New → Folder** → name it `AddOns`.)
+1. 📥 **Download** – Open [GitHub Releases](https://github.com/patpaskoch/PaTiAggro/releases) and download the `PaTiAggro-<version>.zip` file under **Assets** (not **Source code (zip)**).
+2. 📂 **Extract & Copy** – Right-click the ZIP, select **Extract All**, then copy the extracted `PaTiAggro` folder into the WoW Forever client's `Interface/AddOns/` folder. No renaming is needed.
+3. ☑️ **Enable in Game** – Start WoW, open the **AddOns** menu at character selection, tick **PaTiAggro**, and click **OK**.
 
-### 3. Drag the folder in and rename it
-In **Downloads** double-click `PaTiAggro-main.zip`. It holds a folder **`PaTiAggro-main`** —
-drag it with the mouse into the **AddOns** folder. Then there: right-click the folder → **Rename** →
-**`PaTiAggro`** (without "-main", otherwise WoW does not load it).
-
-✅ It is right when you see the file `PaTiAggro.toc` directly inside the `PaTiAggro` folder.
-Is there still an old **`PaTiTank`** folder: delete it (right-click → Delete) — PaTiAggro replaces it; both together
-show two windows and double numbers.
-
-### 4. Enable it in the game
-Start WoW → in the character selection at the bottom left **AddOns** → tick **PaTiAggro** →
-(if shown: tick **Load out of date AddOns**) → **Okay** → log in.
-
-Type **`/paggro test`** in the chat: now you see the window with example enemies.
-`/paggro test` again ends the preview.
-
-Healer or damage? `/paggro settings` → choose **My role**. Auto uses the group role — without assigned roles it shows
-the tank view ("0 / 5").
-
-Something does not work? Just write at which step you are stuck — best with a screenshot.
-
+**Upgrading from PaTiTank?** Remove the old `PaTiTank` addon folder to avoid loading both addons.
 
 ## Features
 - **My role** (Settings): Auto, Tank, Healer or Damage. Auto uses the role WoW reports for you in the group; without

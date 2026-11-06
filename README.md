@@ -2,6 +2,8 @@
 
 <img src="assets/icon-128.png" width="96" alt="PaTiAggro icon">
 
+## What is PaTiAggro?
+
 Aggro for every role in World of Warcraft: Forever (Interface 16001). As a **tank** you see your threat on your
 target, who pulls it next and which enemies you lost; as a **healer or damage dealer** you see how close you are to
 pulling and who has the aggro on your target. Display only — it never targets or taunts.
@@ -10,17 +12,8 @@ pulling and who has the aggro on your target. Display only — it never targets 
 > Coming from PaTiTank: delete the old `PaTiTank` folder in `AddOns`; your PaTiTank settings (position, size …) start
 > fresh once.
 
-## Installation
-
-![PaTiAggro – three-step installation guide](assets/installation_en.svg)
-
-1. 📥 **Download** – Open [GitHub Releases](https://github.com/patpaskoch/PaTiAggro/releases) and download the `PaTiAggro-<version>.zip` file under **Assets** (not **Source code (zip)**).
-2. 📂 **Extract & Copy** – Right-click the ZIP, select **Extract All**, then copy the extracted `PaTiAggro` folder into the WoW Forever client's `Interface/AddOns/` folder. No renaming is needed.
-3. ☑️ **Enable in Game** – Start WoW, open the **AddOns** menu at character selection, tick **PaTiAggro**, and click **OK**.
-
-**Upgrading from PaTiTank?** Remove the old `PaTiTank` addon folder to avoid loading both addons.
-
 ## Features
+
 - **My role** (Settings): Auto, Tank, Healer or Damage. Auto uses the role WoW reports for you in the group; without
   one, but with another member assigned as tank, it shows your own threat; without any role it shows the tank view.
   Never guessed from your class — as healer or damage without group roles, set "My role" once (saved per character).
@@ -75,6 +68,30 @@ content are shown: no AGGRO TOTAL without enemies, no AGGRO TARGET without an en
 - ••• menu: Settings, Lock, Collapse, Test Mode, Hide. Settings: language, my role, scale, lock.
   Languages: English, Deutsch (others fall back to English)
 
+## Installation
+
+![PaTiAggro – three-step installation guide](assets/installation_en.svg)
+
+1. 📥 **Download** – Open [GitHub Releases](https://github.com/patpaskoch/PaTiAggro/releases) and download the `PaTiAggro-<version>.zip` file under **Assets** (not **Source code (zip)**).
+2. 📂 **Extract & Copy** – Right-click the ZIP, select **Extract All**, then copy the extracted `PaTiAggro` folder into the WoW Forever client's `Interface/AddOns/` folder. No renaming is needed.
+3. ☑️ **Enable in Game** – Start WoW, open the **AddOns** menu at character selection, tick **PaTiAggro**, and click **OK**.
+
+**Upgrading from PaTiTank?** Remove the old `PaTiTank` addon folder to avoid loading both addons.
+
+## Getting Started
+
+- `/paggro test` shows the display with example enemies — the tank view or, with "My role" set to Healer or Damage,
+  the healer/damage view
+- Turn on enemy nameplates (default key V) so PaTiAggro sees more than your target
+- `/paggro` shows or hides the window
+- A red row `1 Kultist → Healer` appears: click the nameplate showing a red "1" to target that enemy
+
+## Settings
+
+`/paggro settings` or ••• → Settings: language, my role, scale, window lock, numbers on nameplates on/off (off: no
+numbers at all).
+- **Window:** panel opacity (30–100 %)
+
 ## PaTiSuite
 
 This addon is part of the **PaTiSuite** — a collection of small addons for World of Warcraft: Forever.
@@ -98,23 +115,13 @@ Each one is installed on its own and works on its own; none of them is needed by
 - [PaTiLead](https://github.com/patpaskoch/PaTiLead) – manual group tools: raid markers, ready check, pull timer
 - [PaTiSuite](https://github.com/patpaskoch/PaTiSuite) – shows and hides this window together with the other PaTi windows
 
-## First steps
-- `/paggro test` shows the display with example enemies — the tank view or, with "My role" set to Healer or Damage,
-  the healer/damage view
-- Turn on enemy nameplates (default key V) so PaTiAggro sees more than your target
-- `/paggro` shows or hides the window
-- A red row `1 Kultist → Healer` appears: click the nameplate showing a red "1" to target that enemy
-
-## Settings
-`/paggro settings` or ••• → Settings: language, my role, scale, window lock, numbers on nameplates on/off (off: no
-numbers at all).
-- **Window:** panel opacity (30–100 %)
-
 ## Commands
+
 `/paggro` or `/patiaggro` (for now also `/pt`, the old PaTiTank command) — alone: show/hide · `settings` · `test` ·
 `show` · `hide` · `lock` · `unlock` · `reset` (position) · `debug` (threat APIs, your role and the view) · `version`
 
 ## Known limitations
+
 - Enemies without a visible nameplate that nobody in your group targets are not seen — for a healer without a
   target that means: turn on enemy nameplates.
 - The rows in the panel are not clickable: WoW does not let an addon decide in combat which enemy a click targets.
@@ -134,4 +141,5 @@ PaTiAggro is free and open source, and it stays that way. If it makes your runs 
 [Issues](https://github.com/patpaskoch/PaTiAggro/issues).
 
 ## License
+
 MIT — see [LICENSE](LICENSE). Copyright (c) 2026 Patrick Koch.

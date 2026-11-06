@@ -4,11 +4,13 @@
 
 ## What is PaTiAggro?
 
+> **Installation-test beta available:** [Download the current ZIP from Releases](https://github.com/patpaskoch/PaTiAggro/releases). This is an unverified preview for testing the installation, not a stable release.
+
 Aggro for every role in World of Warcraft: Forever (Interface 16001). As a **tank** you see your threat on your
 target, who pulls it next and which enemies you lost; as a **healer or damage dealer** you see how close you are to
 pulling and who has the aggro on your target. Display only — it never targets or taunts.
 
-> Formerly **PaTiTank** (renamed 2026-10-14). Status: 0.1.0, in development, not yet released. Not yet tested in game.
+> Formerly **PaTiTank** (renamed 2026-10-14). Status: 0.1.0, in development, not yet stable. Not yet tested in game.
 > Coming from PaTiTank: delete the old `PaTiTank` folder in `AddOns`; your PaTiTank settings (position, size …) start
 > fresh once.
 

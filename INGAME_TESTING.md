@@ -260,6 +260,8 @@ Panel-Zeilen sind nicht klickbar (technisch blockiert, F17) und werden nicht get
   - MANUAL RETEST REQUIRED
   - ❌ FAIL 2026-10-18
   - Owner: in der Abhak-Liste „Geht nicht“, ohne Notiz → Nachfrage
+  - ❌ FAIL 2026-10-18
+  - Owner: auf der Ingame-Test-Seite „Geht nicht“ (2026-10-18), ohne Notiz; nachgetragen 2026-11-07 → Nachfrage.
 - [ ] PT-AGGRO-031 Heiler/Schaden (Owner 2026-10-21: „Aggro auf dir“ stand an drei Stellen): Dein Ziel greift dich an →
   nur der rote Balken „hat Aggro“ bei dir in AGGRO ZIEL; oben bei AGGRO GESAMT nur die Prozentzahl (rot), kein
   „AGGRO auf dir!“; kein Bereich „AUF DIR“, keine Nummer am Namensschild. Als Tank alles wie bisher

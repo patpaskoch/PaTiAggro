@@ -27,8 +27,12 @@ Regeln und Eintragen von Ergebnissen: [PaTiAdmin/docs/TESTING.md](https://github
 - [x] PT-TANK-003 Icon in der AddOn-Liste korrekt, keine weiße oder fehlende Textur
   - ✅ VERIFIED 2026-10-02
   - Owner: die Icons erscheinen im Spiel in der AddOn-Liste korrekt.
-- [ ] PT-TANK-004 Login ohne Lua-Fehler
-- [ ] PT-TANK-005 `/reload` ohne Lua-Fehler
+- [x] PT-TANK-004 Login ohne Lua-Fehler
+  - ✅ VERIFIED 2026-10-18
+  - Owner: auf der Ingame-Test-Seite „Geht“ (2026-10-18), nachgetragen 2026-11-07.
+- [x] PT-TANK-005 `/reload` ohne Lua-Fehler
+  - ✅ VERIFIED 2026-10-18
+  - Owner: auf der Ingame-Test-Seite „Geht“ (2026-10-18), nachgetragen 2026-11-07.
 - [ ] PT-TANK-006 `/pt debug` nennt die vorhandenen Threat-APIs und eine Aggro-Zeile
 
 ## Fenster

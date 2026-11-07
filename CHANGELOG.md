@@ -4,6 +4,10 @@ Format: `## [Unreleased]` / `## [x.y.z] - YYYY-MM-DD` with Added, Changed, Fixed
 History before this file: `git log`.
 
 ## [Unreleased]
+### Added
+- Locking or unlocking the window (••• menu, slash command or settings) now answers with a chat line,
+  e.g. "Window locked." (PaTiShared, owner 2026-11-07).
+
 ### Changed
 - Healer/damage view: an enemy on you shows once (owner 2026-10-21: it stood in three places) — as the red
   "has aggro" bar in AGGRO TARGET. AGGRO TOTAL shows only your percent (no "AGGRO on you!"), and the "ON YOU" list

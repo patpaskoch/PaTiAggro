@@ -206,7 +206,7 @@ local function paintMember(nameString, tagString, holder)
         nameString:SetText(holder.nameKey and L[holder.nameKey] or holder.name)
         tagString:SetText(tagOf(holder))
     else
-        nameString:SetText(L[Aggro.HolderLabel(holder)] or L.OTHER_PLAYER)
+        nameString:SetText(L[Aggro.HolderLabel(holder)])
         tagString:SetText("")
     end
 end
@@ -306,7 +306,7 @@ local function alertDetail(enemy)
     local member = enemy.state == "DANGER" and enemy.challenger or enemy.holder
     if enemy.state == "DANGER" and not member then return L.AGGRO_DANGER end
     local label = Aggro.HolderLabel(member)
-    if label ~= "NAME" then return L[label] or L.OTHER_PLAYER end
+    if label ~= "NAME" then return L[label] end
     if isSecret(member.name) then return L.OTHER_PLAYER end
     return member.name
 end

@@ -39,7 +39,9 @@ Regeln und Eintragen von Ergebnissen: [PaTiAdmin/docs/TESTING.md](https://github
 
 - [ ] PT-TANK-010 `/pt` bzw. `/patitank` blendet das Fenster ein und aus; `/pt show`, `/pt hide`
 - [ ] PT-TANK-011 Fenster am Header verschieben (entsperrt)
-- [ ] PT-TANK-012 Position bleibt nach `/reload`
+- [x] PT-TANK-012 Position bleibt nach `/reload`
+  - ✅ VERIFIED 2026-11-08
+  - Owner: /patitest 2× grün in-game (vor und nach /reload, 42 ok, 0 Fehler; 7 PaTi-Addons installiert)
 - [ ] PT-TANK-013 Lock/Unlock (••• und `/pt lock` / `unlock`): gesperrt nicht verschiebbar
 - [ ] PT-TANK-014 Größe (Scale) wirkt
 - [ ] PT-TANK-015 Einstellungen öffnen (`/pt settings` und •••) und speichern
@@ -142,7 +144,10 @@ Panel-Zeilen sind nicht klickbar (technisch blockiert, F17) und werden nicht get
 ## Combined
 
 - [ ] PT-TANK-110 Zusammen mit allen PaTi-Addons geladen: kein Lua-Fehler
-- [ ] PT-TANK-111 Keine Slash-Command-Kollision: `/pt` und `/patitank` antworten nur PaTiTank
+- [x] PT-TANK-111 Keine Slash-Command-Kollision: `/pt` und `/patitank` antworten nur PaTiTank
+  - ✅ VERIFIED 2026-11-08
+  - Owner: /patitest 2× grün in-game (vor und nach /reload, 42 ok, 0 Fehler; 7 PaTi-Addons installiert)
+  - Hinweis: Befehle heißen heute `/paggro` `/patiaggro` `/pt` (`/patitank` gibt es nicht mehr); keine Kollision gemeldet.
 - [ ] PT-TANK-112 Eigene Einstellungen speichern nur PaTiTank-Werte; Fenster erscheint in PaTiSuite
 
 ## Umbenennung (PaTiAggro)

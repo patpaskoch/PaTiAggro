@@ -11,6 +11,7 @@ History before this file: `git log`.
 - README: the install guide is in English (it was German, owner 2026-10-20) and is the only one; the short
   "Installation" section with the same steps is gone.
 ### Fixed
+- A lost enemy held by a member without a role or readable name showed the raw key "OTHER" instead of "other player" (audit 2026-11-08).
 - A healer or damage dealer without an own WoW role saw the tank view ("0 / 5", owner 2026-10-14): with "My role" =
   Auto, another member assigned as tank now means you are not the tank → your own threat. Without any role the tank
   view stays (never guessed from the class); set "My role" once per character. `/paggro debug` shows "other tank".

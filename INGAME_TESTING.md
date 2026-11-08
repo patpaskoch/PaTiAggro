@@ -101,6 +101,7 @@ Regeln und Eintragen von Ergebnissen: [PaTiAdmin/docs/TESTING.md](https://github
 - [ ] PT-TANK-063 Nicht lesbare Daten (UNKNOWN): graue Zeile „unklar“, nie „unter Kontrolle“
 - [ ] PT-TANK-064 Mob auf dem Heiler: „→ Heiler“ innerhalb von ~1 s
 - [ ] PT-TANK-065 Mob auf einem DD: „→ DD“ (bzw. Name oder „anderer Spieler“ ohne Rolle)
+  - 🔧 FIX IMPLEMENTED 2026-11-08 (Audit: ohne Rolle/Namen stand der rohe Schlüssel „OTHER“ statt „anderer Spieler“) – MANUAL RETEST REQUIRED
 - [ ] PT-TANK-066 Tote Gegner verschwinden aus Zählung und Zeilen
 
 ## Nummerierung

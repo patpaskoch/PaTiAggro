@@ -55,7 +55,9 @@ Regeln und Eintragen von Ergebnissen: [PaTiAdmin/docs/TESTING.md](https://github
 ## SavedVariables
 
 - [ ] PT-TANK-030 Einstellungen bleiben nach `/reload`
-- [ ] PT-TANK-031 Einstellungen bleiben nach Relog
+- [x] PT-TANK-031 Einstellungen bleiben nach Relog
+  - ✅ VERIFIED 2026-11-10
+  - Owner: 5 Spielsitzungen mit wiederholtem Einloggen, keine Auffälligkeiten
 - [ ] PT-TANK-032 Update mit alten Einstellungen: Position und Werte bleiben
 - [ ] PT-TANK-033 „Standard wiederherstellen“ setzt die Einstellungen zurück
 
@@ -136,7 +138,9 @@ Panel-Zeilen sind nicht klickbar (technisch blockiert, F17) und werden nicht get
 
 ## Combat / Sicherheit
 
-- [ ] PT-TANK-100 Kein Lua-Fehler im Kampf
+- [x] PT-TANK-100 Kein Lua-Fehler im Kampf
+  - ✅ VERIFIED 2026-11-10
+  - Owner: 3 Stunden gespielt inkl. Kampf, kein Lua-Fehler (PaTiTest sessionErrors 2026-11-10 19:40–23:01 leer)
 - [ ] PT-TANK-101 Keine `ADDON_ACTION_BLOCKED` / `ADDON_ACTION_FORBIDDEN`
 - [ ] PT-TANK-102 `taint.log` (`/console taintLog 1`) ohne PaTiTank-Eintrag
 - [ ] PT-TANK-103 Menü und Slash-Befehle im Kampf ohne Fehler

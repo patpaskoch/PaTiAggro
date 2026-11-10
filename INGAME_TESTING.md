@@ -37,8 +37,12 @@ Regeln und Eintragen von Ergebnissen: [PaTiAdmin/docs/TESTING.md](https://github
 
 ## Fenster
 
-- [ ] PT-TANK-010 `/pt` bzw. `/patitank` blendet das Fenster ein und aus; `/pt show`, `/pt hide`
-- [ ] PT-TANK-011 Fenster am Header verschieben (entsperrt)
+- [x] PT-TANK-010 `/pt` bzw. `/patitank` blendet das Fenster ein und aus; `/pt show`, `/pt hide`
+  - ✅ VERIFIED 2026-11-10
+  - Owner: Testseite „Geht“
+- [x] PT-TANK-011 Fenster am Header verschieben (entsperrt)
+  - ✅ VERIFIED 2026-11-10
+  - Owner: Testseite „Geht“
 - [x] PT-TANK-012 Position bleibt nach `/reload`
   - ✅ VERIFIED 2026-11-08
   - Owner: /patitest 2× grün in-game (vor und nach /reload, 42 ok, 0 Fehler; 7 PaTi-Addons installiert)

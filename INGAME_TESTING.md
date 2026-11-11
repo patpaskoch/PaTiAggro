@@ -293,5 +293,7 @@ Panel-Zeilen sind nicht klickbar (technisch blockiert, F17) und werden nicht get
 - [ ] PT-AGGRO-036 Rahmenfarbe: unter 70 % grau, ab 70 % gelb, ab 90 % oder wenn er dich angreift rot; die Prozentzahl
   ab 70 % in derselben Farbe
 - [ ] PT-AGGRO-037 Mehr als fünf Gegner: vier kleine Karten, rechts oben „+N“ für den Rest; Gegner anvisieren, den noch
-  niemand angegriffen hat: groß mit „0 %“; als Tank unverändert „x / y AGGRO GESAMT“
+  niemand angegriffen hat: groß mit „0 %“; ein Gegner, der dich angreift, zeigt „auf dir“ (rot) statt „unklar“
+- [ ] PT-AGGRO-038 Als Tank und bei „Meine Rolle: Auto“ ebenfalls Gegnerkarten; rechts oben „x / y“ (gelb, wenn dir einer
+  fehlt); Gegner, die du verloren hast, zuerst und rot; `/paggro test` als Tank: sechs Gegner, Ghul rot (45 %)
 

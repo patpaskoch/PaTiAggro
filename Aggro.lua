@@ -97,15 +97,15 @@ function Aggro.Alerts(rows, numbers, detailOf, unknownName, isSecret)
     return list
 end
 
--- What to show for the member holding a lost enemy: a role key, "NAME" (show holder.name as-is) or "OTHER".
+-- What to show for the member holding a lost enemy: a role key, "NAME" (show holder.name as-is) or "OTHER_PLAYER".
 -- Role first (quickest to read), then name, then "other player".
 function Aggro.HolderLabel(holder)
-    if not holder then return "OTHER" end
+    if not holder then return "OTHER_PLAYER" end
     if holder.role == "TANK" or holder.role == "HEALER" or holder.role == "DAMAGER" or holder.role == "PET" then
         return "ROLE_" .. holder.role
     end
     if holder.hasName then return "NAME" end
-    return "OTHER"
+    return "OTHER_PLAYER"
 end
 
 -- Thresholds of the scaled percent (owner 2026-10-14: 70/90 suite wide): 100 = that member pulls aggro now (WoW
@@ -178,4 +178,31 @@ function Aggro.SelfWorst(results)
     end
     if not worst then return nil end
     return { state = worst.state, percent = worst.percent, name = worst.name, onYou = onYou }
+end
+
+Aggro.MAX_SELF_CARDS = 4 -- small enemy cards beside the large one in AGGRO TOTAL (healer/damage)
+
+-- AGGRO TOTAL as enemy cards (healer/damage, owner 2026-11-11): the enemy you target large, the others small beside
+-- it, worst first (SELF_RANK, then the higher percent, then the scan order — no reshuffling between paints). Without
+-- a target among them the worst one is the large card. entries: SelfThreat results with the caller's fields
+-- (.isTarget, .unit, .name …). Returns the large entry (nil for an empty list), the small ones (at most max) and how
+-- many did not fit.
+function Aggro.SelfCards(entries, max)
+    local sorted = {}
+    for index, entry in ipairs(entries) do sorted[index] = { entry = entry, index = index } end
+    table.sort(sorted, function(a, b)
+        local rankA, rankB = SELF_RANK[a.entry.state] or 0, SELF_RANK[b.entry.state] or 0
+        if rankA ~= rankB then return rankA > rankB end
+        local percentA, percentB = a.entry.percent or 0, b.entry.percent or 0
+        if percentA ~= percentB then return percentA > percentB end
+        return a.index < b.index
+    end)
+    local largeAt = 1
+    for position, item in ipairs(sorted) do
+        if item.entry.isTarget then largeAt = position break end
+    end
+    local large = table.remove(sorted, largeAt)
+    local small = {}
+    for position = 1, math.min(max, #sorted) do small[position] = sorted[position].entry end
+    return large and large.entry or nil, small, math.max(0, #sorted - max)
 end

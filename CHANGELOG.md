@@ -9,12 +9,18 @@ History before this file: `git log`.
   e.g. "Window locked." (PaTiShared, owner 2026-11-07).
 
 ### Changed
+- Healer/damage view, AGGRO TOTAL (owner 2026-11-11): enemy cards instead of one number — the portrait and name of
+  each enemy you could pull, with your percent below. The enemy you target is large; up to four others stand beside it
+  at half the size, worst first ("+2" when more do not fit); a single enemy uses the whole width. The frame around a
+  portrait takes the danger colour (yellow from 70 %, red from 90 % or when it attacks you). Your target shows as soon
+  as you target it (0 %). The cards are not clickable: targeting from addon code is not possible safely (F17).
 - Healer/damage view: an enemy on you shows once (owner 2026-10-21: it stood in three places) — as the red
   "has aggro" bar in AGGRO TARGET. AGGRO TOTAL shows only your percent (no "AGGRO on you!"), and the "ON YOU" list
   with its nameplate numbers is gone.
 - README: the install guide is in English (it was German, owner 2026-10-20) and is the only one; the short
   "Installation" section with the same steps is gone.
 ### Fixed
+- A lost enemy held by a member without a role or readable name showed the raw key "OTHER" instead of "other player" (audit 2026-11-08).
 - A healer or damage dealer without an own WoW role saw the tank view ("0 / 5", owner 2026-10-14): with "My role" =
   Auto, another member assigned as tank now means you are not the tank → your own threat. Without any role the tank
   view stays (never guessed from the class); set "My role" once per character. `/paggro debug` shows "other tank".

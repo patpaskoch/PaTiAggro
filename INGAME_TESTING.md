@@ -37,9 +37,15 @@ Regeln und Eintragen von Ergebnissen: [PaTiAdmin/docs/TESTING.md](https://github
 
 ## Fenster
 
-- [ ] PT-TANK-010 `/pt` bzw. `/patitank` blendet das Fenster ein und aus; `/pt show`, `/pt hide`
-- [ ] PT-TANK-011 Fenster am Header verschieben (entsperrt)
-- [ ] PT-TANK-012 Position bleibt nach `/reload`
+- [x] PT-TANK-010 `/pt` bzw. `/patitank` blendet das Fenster ein und aus; `/pt show`, `/pt hide`
+  - ✅ VERIFIED 2026-11-10
+  - Owner: Testseite „Geht“
+- [x] PT-TANK-011 Fenster am Header verschieben (entsperrt)
+  - ✅ VERIFIED 2026-11-10
+  - Owner: Testseite „Geht“
+- [x] PT-TANK-012 Position bleibt nach `/reload`
+  - ✅ VERIFIED 2026-11-08
+  - Owner: /patitest 2× grün in-game (vor und nach /reload, 42 ok, 0 Fehler; 7 PaTi-Addons installiert)
 - [ ] PT-TANK-013 Lock/Unlock (••• und `/pt lock` / `unlock`): gesperrt nicht verschiebbar
 - [ ] PT-TANK-014 Größe (Scale) wirkt
 - [ ] PT-TANK-015 Einstellungen öffnen (`/pt settings` und •••) und speichern
@@ -53,7 +59,9 @@ Regeln und Eintragen von Ergebnissen: [PaTiAdmin/docs/TESTING.md](https://github
 ## SavedVariables
 
 - [ ] PT-TANK-030 Einstellungen bleiben nach `/reload`
-- [ ] PT-TANK-031 Einstellungen bleiben nach Relog
+- [x] PT-TANK-031 Einstellungen bleiben nach Relog
+  - ✅ VERIFIED 2026-11-10
+  - Owner: 5 Spielsitzungen mit wiederholtem Einloggen, keine Auffälligkeiten
 - [ ] PT-TANK-032 Update mit alten Einstellungen: Position und Werte bleiben
 - [ ] PT-TANK-033 „Standard wiederherstellen“ setzt die Einstellungen zurück
 
@@ -101,6 +109,7 @@ Regeln und Eintragen von Ergebnissen: [PaTiAdmin/docs/TESTING.md](https://github
 - [ ] PT-TANK-063 Nicht lesbare Daten (UNKNOWN): graue Zeile „unklar“, nie „unter Kontrolle“
 - [ ] PT-TANK-064 Mob auf dem Heiler: „→ Heiler“ innerhalb von ~1 s
 - [ ] PT-TANK-065 Mob auf einem DD: „→ DD“ (bzw. Name oder „anderer Spieler“ ohne Rolle)
+  - 🔧 FIX IMPLEMENTED 2026-11-08 (Audit: ohne Rolle/Namen stand der rohe Schlüssel „OTHER“ statt „anderer Spieler“) – MANUAL RETEST REQUIRED
 - [ ] PT-TANK-066 Tote Gegner verschwinden aus Zählung und Zeilen
 
 ## Nummerierung
@@ -133,7 +142,9 @@ Panel-Zeilen sind nicht klickbar (technisch blockiert, F17) und werden nicht get
 
 ## Combat / Sicherheit
 
-- [ ] PT-TANK-100 Kein Lua-Fehler im Kampf
+- [x] PT-TANK-100 Kein Lua-Fehler im Kampf
+  - ✅ VERIFIED 2026-11-10
+  - Owner: 3 Stunden gespielt inkl. Kampf, kein Lua-Fehler (PaTiTest sessionErrors 2026-11-10 19:40–23:01 leer)
 - [ ] PT-TANK-101 Keine `ADDON_ACTION_BLOCKED` / `ADDON_ACTION_FORBIDDEN`
 - [ ] PT-TANK-102 `taint.log` (`/console taintLog 1`) ohne PaTiTank-Eintrag
 - [ ] PT-TANK-103 Menü und Slash-Befehle im Kampf ohne Fehler
@@ -141,7 +152,10 @@ Panel-Zeilen sind nicht klickbar (technisch blockiert, F17) und werden nicht get
 ## Combined
 
 - [ ] PT-TANK-110 Zusammen mit allen PaTi-Addons geladen: kein Lua-Fehler
-- [ ] PT-TANK-111 Keine Slash-Command-Kollision: `/pt` und `/patitank` antworten nur PaTiTank
+- [x] PT-TANK-111 Keine Slash-Command-Kollision: `/pt` und `/patitank` antworten nur PaTiTank
+  - ✅ VERIFIED 2026-11-08
+  - Owner: /patitest 2× grün in-game (vor und nach /reload, 42 ok, 0 Fehler; 7 PaTi-Addons installiert)
+  - Hinweis: Befehle heißen heute `/paggro` `/patiaggro` `/pt` (`/patitank` gibt es nicht mehr); keine Kollision gemeldet.
 - [ ] PT-TANK-112 Eigene Einstellungen speichern nur PaTiTank-Werte; Fenster erscheint in PaTiSuite
 
 ## Umbenennung (PaTiAggro)
@@ -265,3 +279,19 @@ Panel-Zeilen sind nicht klickbar (technisch blockiert, F17) und werden nicht get
   „AGGRO auf dir!“; kein Bereich „AUF DIR“, keine Nummer am Namensschild. Als Tank alles wie bisher
 - [ ] PT-AGGRO-032 `/paggro test` mit Rolle Heiler oder Schaden: oben „78 %“ (gelb), AGGRO ZIEL mit den Balken, kein
   Bereich „AUF DIR“; mit Rolle Tank die bisherige Testansicht
+  - Owner 2026-11-11: statt „78 %“ Gegnerkarten mit Bild und Namen → neu in PT-AGGRO-033…037
+  - MANUAL RETEST REQUIRED
+
+## Gegnerkarten (Heiler/Schaden, 2026-11-11)
+
+- [ ] PT-AGGRO-033 `/paggro test` als Heiler oder Schaden: unter „AGGRO GESAMT“ groß das Bild des Zombies mit Namen und
+  „78 %“ (gelber Rahmen), daneben halb so groß Ghul (40 %) und Pestratte (12 %, Fragezeichen-Bild); nichts überlappt,
+  lange Namen werden abgeschnitten
+- [ ] PT-AGGRO-034 Echter Kampf: dein anvisierter Gegner ist groß mit seinem Porträt, die anderen Gegner der Gruppe
+  klein daneben; Ziel wechseln → der neue Gegner wird groß, der alte rückt klein daneben
+- [ ] PT-AGGRO-035 Nur ein Gegner: das große Bild nimmt die ganze Breite, Name und Prozent stehen groß rechts daneben
+- [ ] PT-AGGRO-036 Rahmenfarbe: unter 70 % grau, ab 70 % gelb, ab 90 % oder wenn er dich angreift rot; die Prozentzahl
+  ab 70 % in derselben Farbe
+- [ ] PT-AGGRO-037 Mehr als fünf Gegner: vier kleine Karten, rechts oben „+N“ für den Rest; Gegner anvisieren, den noch
+  niemand angegriffen hat: groß mit „0 %“; als Tank unverändert „x / y AGGRO GESAMT“
+

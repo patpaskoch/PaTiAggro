@@ -22,7 +22,13 @@ local TEST_CURRENT = {
     { holder = { nameKey = "TEST_PLAYER", role = "DAMAGER" }, percent = 84 },
     { holder = { nameKey = "TEST_HEALER", role = "HEALER" }, percent = 35 },
 }
-local TEST_SELF = { state = "WARNING", percent = 78 } -- healer/damage: your highest threat
+-- Healer/damage: you target the Zombie (78 %, yellow); the Ghul and the Pestratte stand small beside it.
+local TEST_SELF_CARDS = {
+    { key = "TEST_ENEMY_5", state = "WARNING", percent = 78, isTarget = true,
+        icon = [[Interface\Icons\Spell_Shadow_RaiseDead]] },
+    { key = "TEST_ENEMY_3", state = "GOOD", percent = 40, icon = [[Interface\Icons\Spell_Shadow_AnimateDead]] },
+    { key = "TEST_ENEMY_6", state = "GOOD", percent = 12 },
+}
 
 local function say(key, ...)
     print("|cff68caffPaTiAggro:|r " .. L[key]:format(...))
@@ -71,6 +77,94 @@ total.value:SetFontObject(UI.Fonts.Title)
 total.value:SetPoint("TOPLEFT", PAD, -1)
 total.value:SetJustifyH("LEFT")
 total.title:SetPoint("BOTTOMLEFT", total.value, "BOTTOMRIGHT", UI.Spacing.SM, 1)
+
+-- AGGRO TOTAL, healer/damage (owner 2026-11-11): enemy cards instead of one number — portrait, name and your percent.
+-- The enemy you target is large; up to Aggro.MAX_SELF_CARDS others stand beside it at half the size; a single enemy
+-- uses the whole width. The frame around a portrait takes the danger colour. Display only: cards are not clickable
+-- (targeting from addon code is not possible safely, FOLLOW_UPS F17).
+local LARGE, SMALL, CARD_TEXT = 48, 24, 14
+local LARGE_WIDTH = LARGE + UI.Spacing.MD
+local SMALL_WIDTH = math.floor((BAR_WIDTH - LARGE_WIDTH - UI.Spacing.SM - (Aggro.MAX_SELF_CARDS - 1) * UI.Spacing.XS)
+    / Aggro.MAX_SELF_CARDS)
+local CARD_COLOR = { GOOD = "TextMuted", WARNING = "Warning", DANGER = "Danger", AGGRO = "Danger", UNKNOWN = "TextMuted" }
+local NO_PORTRAIT = [[Interface\Icons\INV_Misc_QuestionMark]]
+
+local function newCard(size)
+    local card = CreateFrame("Frame", nil, total)
+    card.frame = card:CreateTexture(nil, "BACKGROUND")
+    card.frame:SetPoint("TOPLEFT")
+    card.frame:SetSize(size, size)
+    card.portrait = card:CreateTexture(nil, "ARTWORK")
+    card.portrait:SetPoint("TOPLEFT", card.frame, "TOPLEFT", 2, -2)
+    card.portrait:SetPoint("BOTTOMRIGHT", card.frame, "BOTTOMRIGHT", -2, 2)
+    card.name = card:CreateFontString(nil, "OVERLAY", UI.Fonts.Text)
+    card.name:SetJustifyH("LEFT")
+    card.name:SetWordWrap(false)
+    card.value = card:CreateFontString(nil, "OVERLAY", UI.Fonts.Text)
+    card.value:SetJustifyH("LEFT")
+    card.value:SetWordWrap(false)
+    card:Hide()
+    return card
+end
+local largeCard = newCard(LARGE)
+local smallCards = {}
+for index = 1, Aggro.MAX_SELF_CARDS do
+    local card = newCard(SMALL)
+    card:SetPoint("TOPLEFT", PAD + LARGE_WIDTH + UI.Spacing.SM + (index - 1) * (SMALL_WIDTH + UI.Spacing.XS), -CAPTION)
+    card:SetSize(SMALL_WIDTH, SMALL + 2 * CARD_TEXT)
+    card.name:SetPoint("TOPLEFT", 0, -SMALL - 2)
+    card.name:SetWidth(SMALL_WIDTH)
+    card.value:SetPoint("TOPLEFT", 0, -SMALL - 2 - CARD_TEXT)
+    card.value:SetWidth(SMALL_WIDTH)
+    smallCards[index] = card
+end
+-- "+2": enemies that did not fit, on the caption line.
+total.more = total:CreateFontString(nil, "OVERLAY", UI.Fonts.Text)
+total.more:SetPoint("TOPRIGHT", -PAD, 0)
+UI.Paint(total.more, "SetTextColor", "TextMuted")
+
+-- Tank: the large number with the caption beside it. Cards: the caption on top, the cards below.
+local cardView -- nil until the first paint
+local function setCardView(cards)
+    if cards == cardView then return end
+    cardView = cards
+    total.value:SetShown(not cards)
+    total.more:SetShown(cards)
+    total.title:ClearAllPoints()
+    if cards then
+        total.title:SetPoint("TOPLEFT", PAD, 0)
+    else
+        total.title:SetPoint("BOTTOMLEFT", total.value, "BOTTOMRIGHT", UI.Spacing.SM, 1)
+        largeCard:Hide()
+        for _, card in ipairs(smallCards) do card:Hide() end
+    end
+end
+
+-- One enemy: the large card spans the width, name and percent beside the portrait. More: name and percent below it.
+local largeAlone -- nil until the first card paint
+local function placeLargeCard(alone)
+    if alone == largeAlone then return end
+    largeAlone = alone
+    largeCard:ClearAllPoints()
+    largeCard:SetPoint("TOPLEFT", PAD, -CAPTION)
+    largeCard.name:ClearAllPoints()
+    largeCard.value:ClearAllPoints()
+    if alone then
+        largeCard:SetSize(BAR_WIDTH, LARGE)
+        largeCard.name:SetPoint("TOPLEFT", LARGE + UI.Spacing.MD, -UI.Spacing.SM)
+        largeCard.name:SetWidth(BAR_WIDTH - LARGE - UI.Spacing.MD)
+        largeCard.value:SetWidth(BAR_WIDTH - LARGE - UI.Spacing.MD)
+        largeCard.value:SetPoint("TOPLEFT", largeCard.name, "BOTTOMLEFT", 0, -UI.Spacing.SM)
+        largeCard.value:SetFontObject(UI.Fonts.Title)
+    else
+        largeCard:SetSize(LARGE_WIDTH, LARGE + 2 * CARD_TEXT)
+        largeCard.name:SetPoint("TOPLEFT", 0, -LARGE - 2)
+        largeCard.name:SetWidth(LARGE_WIDTH)
+        largeCard.value:SetWidth(LARGE_WIDTH)
+        largeCard.value:SetPoint("TOPLEFT", 0, -LARGE - 2 - CARD_TEXT)
+        largeCard.value:SetFontObject(UI.Fonts.Text)
+    end
+end
 -- AGGRO TARGET: the caption small above the bars (owner 2026-10-14), the enemy name beside it.
 local now = newSection("AGGRO_TARGET")
 now.title:SetPoint("TOPLEFT", PAD, 0)
@@ -166,13 +260,14 @@ local lastNumbers = {} -- readable GUID -> row number of the last paint (Aggro.N
 local rowUnit = {}     -- row index -> nameplate token its number belongs to (cleared on plate events)
 
 local totalShown = false -- AGGRO TOTAL has something to say (paintAggro)
+local totalHeight = LINE + 2 -- AGGRO TOTAL: one line (tank) or the enemy cards (healer/damage)
 
 -- Only sections with content are shown (owner 2026-10-14): AGGRO TOTAL without enemies, AGGRO TARGET without an enemy
 -- target and AGGRO TEAM without rows disappear. Shown ones stack with a gap before each (GAP); AGGRO TEAM gets more
 -- room above it. Returns the used height (0: nothing to show).
 local function placeSections()
     local layout = {
-        { section = total, shown = totalShown, height = LINE + 2, gap = 0 },
+        { section = total, shown = totalShown, height = totalHeight, gap = 0 },
         { section = now, shown = shownMembers > 0, height = CAPTION + shownMembers * LINE, gap = GAP.target },
         { section = team, shown = shownRows > 0, height = CAPTION + shownRows * LINE, gap = GAP.team },
     }
@@ -335,45 +430,73 @@ end
 
 local SELF_COLOR = { GOOD = "Text", WARNING = "Warning", DANGER = "Danger", AGGRO = "Danger", UNKNOWN = "TextMuted" }
 
--- AGGRO TOTAL, healer/damage: your highest threat over your target and every enemy the group fights — healing
--- threat lands on all of them (Aggro.SelfWorst). Only the percent (owner 2026-10-21: an enemy on you showed in three
--- places): the red "has aggro" bar in AGGRO TARGET is the one warning. false: nothing to show.
-local function paintSelfTotal(enemies)
-    local info = TEST_SELF
-    if not testMode then
-        local results = {}
-        local function add(status, percent)
-            local result = Aggro.SelfThreat(role, status, percent)
-            if result then results[#results + 1] = result end
-        end
-        if UnitExists("target") then add(Threat.Self("target")) end
-        for _, enemy in ipairs(enemies) do add(enemy.playerStatus, enemy.playerPercent) end
-        info = Aggro.SelfWorst(results)
+-- Your threat on each enemy you could pull (healer/damage): every enemy the group fights — healing threat lands on all
+-- of them — plus your target, also before anyone attacked it (0 %). Each entry is a SelfThreat result with the unit
+-- token for the portrait, the name (may be secret: SetText only) and whether it is your target.
+local function selfEntries(enemies)
+    if testMode then return TEST_SELF_CARDS end
+    local list, hasTarget = {}, false
+    local function add(unit, name, isTarget, status, percent)
+        local result = Aggro.SelfThreat(role, status, percent)
+        if not result and isTarget and Threat.ZeroThreat(unit) then result = { state = "GOOD", percent = 0 } end
+        if not result then return end
+        result.unit, result.name, result.isTarget = unit, name, isTarget
+        list[#list + 1] = result
+        hasTarget = hasTarget or isTarget
     end
-    if not info then
-        total.value:SetText(L.AGGRO_NONE)
-        total.value:SetTextColor(UI.Color("Text"))
-        return false
+    for _, enemy in ipairs(enemies) do
+        add(enemy.unit, enemy.name, enemy.isTarget, enemy.playerStatus, enemy.playerPercent)
     end
-    if info.state == "UNKNOWN" or not info.percent then
-        total.value:SetText(L.AGGRO_UNKNOWN)
+    if not hasTarget and UnitExists("target") then
+        local status, percent = Threat.Self("target")
+        add("target", UnitName("target"), true, status, percent)
+    end
+    return list
+end
+
+-- SetPortraitTexture takes the unit token itself; no unit data is read. Test mode: fixed icons.
+local function paintCard(card, entry)
+    card:SetShown(entry ~= nil)
+    if not entry then return end
+    if entry.unit and SetPortraitTexture then
+        SetPortraitTexture(card.portrait, entry.unit)
     else
-        total.value:SetText(("%d %%"):format(info.percent))
+        card.portrait:SetTexture(entry.icon or NO_PORTRAIT)
     end
-    total.value:SetTextColor(UI.Color(SELF_COLOR[info.state]))
-    return true
+    card.frame:SetColorTexture(UI.Color(CARD_COLOR[entry.state] or "TextMuted"))
+    local name = entry.key and L[entry.key] or entry.name
+    if isSecret(name) or name ~= nil then card.name:SetText(name) else card.name:SetText(L.UNKNOWN_ENEMY) end
+    card.name:SetTextColor(UI.Color("Text"))
+    if entry.state == "UNKNOWN" or not entry.percent then
+        card.value:SetText(L.AGGRO_UNKNOWN)
+    else
+        card.value:SetText(("%d %%"):format(entry.percent))
+    end
+    card.value:SetTextColor(UI.Color(SELF_COLOR[entry.state] or "Text"))
+end
+
+-- AGGRO TOTAL, healer/damage: the enemy cards (see newCard). Returns whether there is anything to show and the height.
+local function paintSelfTotal(enemies)
+    local large, small, hidden = Aggro.SelfCards(selfEntries(enemies), Aggro.MAX_SELF_CARDS)
+    placeLargeCard(#small == 0)
+    paintCard(largeCard, large)
+    for index, card in ipairs(smallCards) do paintCard(card, small[index]) end
+    total.more:SetText(hidden > 0 and ("+%d"):format(hidden) or "")
+    if not large then return false, LINE + 2 end
+    return true, CAPTION + (#small == 0 and LARGE or LARGE + 2 * CARD_TEXT)
 end
 
 local function paintAggro()
     local tank = role == "TANK"
     local enemies
     if testMode then enemies = tank and TEST_ENEMIES or {} else enemies = Threat.Scan() end
-    local summary, hasTotal
+    local summary, hasTotal, height
+    setCardView(not tank)
     if tank then
         summary = Aggro.Summarize(enemies)
-        hasTotal = summary.total > 0
+        hasTotal, height = summary.total > 0, LINE + 2
     else
-        hasTotal = paintSelfTotal(enemies)
+        hasTotal, height = paintSelfTotal(enemies)
         summary = { rows = {} } -- no list of the enemies on you (owner 2026-10-21): the AGGRO TARGET bar shows it
     end
     local count = math.min(#summary.rows, Aggro.MAX_ROWS)
@@ -430,8 +553,8 @@ local function paintAggro()
             row.holder:SetTextColor(UI.Color(color))
         end
     end
-    if count ~= shownRows or hasTotal ~= totalShown then
-        shownRows, totalShown = count, hasTotal
+    if count ~= shownRows or hasTotal ~= totalShown or height ~= totalHeight then
+        shownRows, totalShown, totalHeight = count, hasTotal, height
         applyLayout() -- no secure frames: resizing is fine in combat
     end
 end

@@ -212,6 +212,18 @@ describe("Aggro.SelfEntries", function()
         assert.same({ "GOOD", 0 }, { list[1].state, list[1].percent }) -- scanned target, you have no threat yet
     end)
 
+    it("tank: every enemy the group fights by its aggro state, lost ones included", function()
+        local list = load().SelfEntries("TANK", {
+            { name = "A", state = "CONTROLLED", playerStatus = 3, playerPercent = 100 },
+            { name = "B", state = "LOST", playerStatus = nil, playerPercent = nil },
+            { name = "C", state = "DANGER", playerStatus = 2, playerPercent = 100 },
+            { name = "D", state = "UNKNOWN", playerPercent = 50 },
+        }, nil)
+        assert.same({ "GOOD", "DANGER", "WARNING", "UNKNOWN" }, { list[1].state, list[2].state, list[3].state, list[4].state })
+        assert.same({ 100, nil, 100 }, { list[1].percent, list[2].percent, list[3].percent })
+        assert.is_nil(list[4].percent) -- unknown state: no percent pretends to be sure
+    end)
+
     it("leaves out enemies you are not on and a target that is no living enemy", function()
         local target = { unit = "target", zero = false }
         assert.same({}, load().SelfEntries("HEALER", { scanned("B", nil, nil, false) }, target))

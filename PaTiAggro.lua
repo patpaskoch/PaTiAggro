@@ -375,13 +375,14 @@ end
 -- Test mode, tank: 6 enemies, 4 held, 1 slipping to Lyra, 1 on the healer Mira.
 -- Fake tokens/GUIDs only feed the numbering; test mode never draws on real nameplates.
 local TEST_ENEMIES = {
-    { key = "TEST_ENEMY_1", state = "CONTROLLED" }, { key = "TEST_ENEMY_2", state = "CONTROLLED" },
+    { key = "TEST_ENEMY_1", state = "CONTROLLED", playerPercent = 100 },
+    { key = "TEST_ENEMY_2", state = "CONTROLLED", playerPercent = 100 },
     { key = "TEST_ENEMY_3", state = "LOST", holder = { nameKey = "TEST_HEALER", role = "HEALER" },
-        unit = "nameplate3", guid = "TEST-3" },
-    { key = "TEST_ENEMY_4", state = "CONTROLLED" },
+        unit = "nameplate3", guid = "TEST-3", playerPercent = 45 },
+    { key = "TEST_ENEMY_4", state = "CONTROLLED", playerPercent = 100 },
     { key = "TEST_ENEMY_5", state = "DANGER", challenger = { nameKey = "TEST_PLAYER", role = "DAMAGER" },
-        unit = "nameplate5", guid = "TEST-5" },
-    { key = "TEST_ENEMY_6", state = "CONTROLLED" },
+        unit = "nameplate5", guid = "TEST-5", playerPercent = 100 },
+    { key = "TEST_ENEMY_6", state = "CONTROLLED", playerPercent = 100 },
 }
 
 -- Right side of an AGGRO TEAM row: who has it (red), who is about to take it (yellow), or a state word.
@@ -432,8 +433,14 @@ end
 local SELF_COLOR = { GOOD = "Text", WARNING = "Warning", DANGER = "Danger", AGGRO = "Danger", UNKNOWN = "TextMuted" }
 
 -- The AGGRO TOTAL entries (Aggro.SelfEntries); your target is added from here when the scan does not have it.
+-- Test mode: healer/damage the fixed cards; tank the test enemies without their fake tokens (no real portraits).
 local function selfEntries(enemies, targetUnclear)
-    if testMode then return TEST_SELF_CARDS end
+    if testMode and role ~= "TANK" then return TEST_SELF_CARDS end
+    if testMode then
+        local list = Aggro.SelfEntries(role, enemies, nil)
+        for _, entry in ipairs(list) do entry.unit, entry.guid = nil, nil end
+        return list
+    end
     local target
     if not targetUnclear and UnitExists("target") then
         local status, percent = Threat.Self("target")
@@ -461,7 +468,9 @@ local function paintCard(card, entry)
     local name = entry.key and L[entry.key] or entry.name
     if isSecret(name) or name ~= nil then card.name:SetText(name) else card.name:SetText(L.UNKNOWN_ENEMY) end
     card.name:SetTextColor(UI.Color("Text"))
-    if entry.state == "UNKNOWN" or not entry.percent then
+    if entry.state == "AGGRO" then
+        card.value:SetText(L.CARD_ON_YOU) -- it attacks you; WoW often gives no percent then (owner 2026-11-11: "unklar")
+    elseif entry.state == "UNKNOWN" or not entry.percent then
         card.value:SetText(L.AGGRO_UNKNOWN)
     else
         card.value:SetText(("%d %%"):format(entry.percent))
@@ -469,13 +478,15 @@ local function paintCard(card, entry)
     card.value:SetTextColor(UI.Color(SELF_COLOR[entry.state] or "Text"))
 end
 
--- AGGRO TOTAL, healer/damage: the enemy cards (see newCard). Returns whether there is anything to show and the height.
-local function paintSelfTotal(enemies, targetUnclear)
+-- AGGRO TOTAL: the enemy cards (see newCard), in every view. count: the tank's "4 / 5" on the caption line (nil for
+-- healer/damage). Returns whether there is anything to show and the height.
+local function paintSelfTotal(enemies, targetUnclear, count)
     local large, small, hidden = Aggro.SelfCards(selfEntries(enemies, targetUnclear), Aggro.MAX_SELF_CARDS)
     placeLargeCard(#small == 0)
     paintCard(largeCard, large)
     for index, card in ipairs(smallCards) do paintCard(card, small[index]) end
-    total.more:SetText(hidden > 0 and ("+%d"):format(hidden) or "")
+    local more = hidden > 0 and ("+%d"):format(hidden) or nil
+    total.more:SetText(count and more and (count .. "  " .. more) or count or more or "")
     if not large then return false, LINE + 2 end
     return true, CAPTION + (#small == 0 and LARGE or LARGE + 2 * CARD_TEXT)
 end
@@ -486,12 +497,15 @@ local function paintAggro()
     local targetUnclear
     if testMode then enemies = tank and TEST_ENEMIES or {} else enemies, targetUnclear = Threat.Scan() end
     local summary, hasTotal, height
-    setCardView(not tank)
+    setCardView(true) -- owner 2026-11-11: the enemy cards in every view (tank, healer, damage, auto)
     if tank then
         summary = Aggro.Summarize(enemies)
-        hasTotal, height = summary.total > 0, LINE + 2
+        local count = summary.total > 0 and L.AGGRO_CONTROLLED:format(summary.held, summary.total) or nil
+        hasTotal, height = paintSelfTotal(enemies, targetUnclear, count)
+        total.more:SetTextColor(UI.Color(summary.held < summary.total and "Warning" or "TextMuted"))
     else
-        hasTotal, height = paintSelfTotal(enemies, targetUnclear)
+        hasTotal, height = paintSelfTotal(enemies, targetUnclear, nil)
+        total.more:SetTextColor(UI.Color("TextMuted"))
         summary = { rows = {} } -- no list of the enemies on you (owner 2026-10-21): the AGGRO TARGET bar shows it
     end
     local count = math.min(#summary.rows, Aggro.MAX_ROWS)
@@ -523,9 +537,6 @@ local function paintAggro()
         if not ok then alertsError = tostring(err):sub(1, 120) end -- /paggro debug only; PaTiAggro keeps running
     end
     if tank then
-        total.value:SetText(summary.total == 0 and L.AGGRO_NONE
-            or L.AGGRO_CONTROLLED:format(summary.held, summary.total))
-        total.value:SetTextColor(UI.Color(summary.held < summary.total and "Warning" or "Text"))
         team.value:SetText(#summary.rows > Aggro.MAX_ROWS and L.AGGRO_MORE:format(#summary.rows - Aggro.MAX_ROWS) or "")
         team.value:SetTextColor(UI.Color("TextMuted"))
     end

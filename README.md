@@ -71,7 +71,7 @@ The section names are small captions in the accent colour, like PaTiHeal's "TARG
 content are shown: no AGGRO TOTAL without enemies, no AGGRO TARGET without an enemy target, no AGGRO TEAM without rows.
 
 **AGGRO TOTAL**
-- Tank: how many of the enemies your group fights you hold (`5 / 6`)
+- Tank: the same enemy cards (lost enemies first, in red) and how many of them you hold (`5 / 6`)
 - Healer/damage: a card per enemy you could pull — portrait, name and your threat on it (healing threat lands on
   every enemy the group fights). The enemy you target is large, up to four others stand beside it at half the size,
   worst first ("+2" for the rest); a single enemy uses the whole width. Frame and percent: grey below 70 %, yellow

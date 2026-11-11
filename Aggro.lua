@@ -142,6 +142,12 @@ function Aggro.CurrentRows(entries, max)
     return rows
 end
 
+-- A threat percent as a whole number 0-999; nil when it is not a readable number.
+local function readablePercent(percent)
+    if type(percent) ~= "number" then return nil end
+    return math.max(0, math.min(999, math.floor(percent + 0.5)))
+end
+
 -- Your own threat on one enemy, by your role (owner 2026-10-14). status = your threat status on it (0-3, nil = you are
 -- not on its threat list), percent = the scaled percent (100 = you pull it); either may be UNREADABLE.
 -- Tank: by status — while you tank, WoW reports 100 % for you, so a percent can never warn you. Healer/Damage: AGGRO
@@ -149,7 +155,7 @@ end
 -- Returns nil (not on its list) or { state = "GOOD"|"WARNING"|"DANGER"|"AGGRO"|"UNKNOWN", percent = 0-999 | nil }.
 function Aggro.SelfThreat(role, status, percent)
     if status == Aggro.UNREADABLE then return { state = "UNKNOWN" } end
-    local readable = type(percent) == "number" and math.max(0, math.min(999, math.floor(percent + 0.5))) or nil
+    local readable = readablePercent(percent)
     if role == "TANK" then
         local state = (status == 3 and "GOOD") or (status == 2 and "WARNING")
             or ((status == 0 or status == 1) and "DANGER") or nil
@@ -174,13 +180,24 @@ Aggro.MAX_SELF_CARDS = 4 -- small enemy cards beside the large one in AGGRO TOTA
 -- you have no threat on yet shows 0 %. target: nil (none, or the scan could not tell) or { unit, name, status,
 -- percent, zero } for your target; zero = a living enemy on no threat list (0 %). Returns SelfThreat results with
 -- .unit, .name, .guid and .isTarget added.
+-- Tank (owner 2026-11-11: cards in every view): each enemy the group fights by its aggro state — held = GOOD,
+-- slipping = WARNING, lost = DANGER — with your percent on it; enemies nobody of you holds come first.
+local TANK_CARD = { CONTROLLED = "GOOD", DANGER = "WARNING", LOST = "DANGER", UNKNOWN = "UNKNOWN" }
+
 function Aggro.SelfEntries(role, enemies, target)
     local list, scannedTarget = {}, false
     local function add(source, isTarget, status, percent, zero)
-        local result = Aggro.SelfThreat(role, status, percent)
+        local result
+        if role == "TANK" and source.state then
+            local state = TANK_CARD[source.state]
+            result = state and { state = state, percent = state ~= "UNKNOWN" and readablePercent(percent) or nil }
+        else
+            result = Aggro.SelfThreat(role, status, percent)
+        end
         if not result and isTarget and zero then result = { state = "GOOD", percent = 0 } end
         if not result then return end
-        result.unit, result.name, result.guid, result.isTarget = source.unit, source.name, source.guid, isTarget
+        result.unit, result.name, result.guid, result.key = source.unit, source.name, source.guid, source.key
+        result.isTarget = isTarget
         list[#list + 1] = result
     end
     for _, enemy in ipairs(enemies) do

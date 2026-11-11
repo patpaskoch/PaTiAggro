@@ -166,24 +166,33 @@ end
 -- UNKNOWN ranks above WARNING: an unreadable enemy could be the dangerous one — but below a readable DANGER or AGGRO.
 local SELF_RANK = { GOOD = 1, WARNING = 2, UNKNOWN = 3, DANGER = 4, AGGRO = 5 }
 
--- The worst of your SelfThreat results over several enemies (healer/damage: every enemy the group fights, since
--- healing threat lands on all of them, not only on a target). Ties: the higher percent. Returns nil for an empty list,
--- else that result (with its .name, if the caller set one) plus .onYou = how many of them attack you (AGGRO).
-function Aggro.SelfWorst(results)
-    local worst, onYou = nil, 0
-    for _, result in ipairs(results) do
-        if result.state == "AGGRO" then onYou = onYou + 1 end
-        local rank, best = SELF_RANK[result.state], worst and SELF_RANK[worst.state] or 0
-        if rank > best or (rank == best and (result.percent or 0) > (worst.percent or 0)) then worst = result end
-    end
-    if not worst then return nil end
-    return { state = worst.state, percent = worst.percent, name = worst.name, onYou = onYou }
-end
-
 Aggro.MAX_SELF_CARDS = 4 -- small enemy cards beside the large one in AGGRO TOTAL (healer/damage)
 
+-- Your threat on each enemy you could pull (healer/damage, the AGGRO TOTAL cards): every scanned enemy — healing
+-- threat lands on all of them — plus your target when the scan does not have it (nobody attacked it yet).
+-- enemies: Threat.Scan entries (.unit, .name, .guid, .isTarget, .playerStatus, .playerPercent). A scanned target
+-- you have no threat on yet shows 0 %. target: nil (none, or the scan could not tell) or { unit, name, status,
+-- percent, zero } for your target; zero = a living enemy on no threat list (0 %). Returns SelfThreat results with
+-- .unit, .name, .guid and .isTarget added.
+function Aggro.SelfEntries(role, enemies, target)
+    local list, scannedTarget = {}, false
+    local function add(source, isTarget, status, percent, zero)
+        local result = Aggro.SelfThreat(role, status, percent)
+        if not result and isTarget and zero then result = { state = "GOOD", percent = 0 } end
+        if not result then return end
+        result.unit, result.name, result.guid, result.isTarget = source.unit, source.name, source.guid, isTarget
+        list[#list + 1] = result
+    end
+    for _, enemy in ipairs(enemies) do
+        scannedTarget = scannedTarget or enemy.isTarget == true
+        add(enemy, enemy.isTarget == true, enemy.playerStatus, enemy.playerPercent, true)
+    end
+    if target and not scannedTarget then add(target, true, target.status, target.percent, target.zero) end
+    return list
+end
+
 -- AGGRO TOTAL as enemy cards (healer/damage, owner 2026-11-11): the enemy you target large, the others small beside
--- it, worst first (SELF_RANK, then the higher percent, then the scan order — no reshuffling between paints). Without
+-- it, worst first (SELF_RANK, then the higher percent, then the order of the list — stable within one scan). Without
 -- a target among them the worst one is the large card. entries: SelfThreat results with the caller's fields
 -- (.isTarget, .unit, .name …). Returns the large entry (nil for an empty list), the small ones (at most max) and how
 -- many did not fit.

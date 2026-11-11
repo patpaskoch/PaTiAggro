@@ -68,6 +68,26 @@ describe("Threat.Scan", function()
         assert.equal("UNKNOWN", enemies.B.state)
     end)
 
+    it("finds the target under its nameplate by token when GUIDs are secret; unclear without UnitIsUnit", function()
+        local ns = setup({
+            player = {},
+            target = { enemy = true, guid = SECRET, name = "A" },
+            nameplate1 = { enemy = true, guid = SECRET, name = "A" },
+            nameplate2 = { enemy = true, guid = SECRET, name = "B" },
+        }, { nameplate1 = { player = 0 }, nameplate2 = { player = 0 } })
+        _G.UnitIsUnit = function(a, b) return (a == "nameplate1" and b == "target") or a == b end
+        ns.Threat.PlateAdded("nameplate1")
+        ns.Threat.PlateAdded("nameplate2")
+        local list, unclear = ns.Threat.Scan()
+        local enemies = byName(list)
+        assert.is_true(enemies.A.isTarget)
+        assert.is_false(enemies.B.isTarget)
+        assert.is_false(unclear)
+        _G.UnitIsUnit = nil
+        list, unclear = ns.Threat.Scan()
+        assert.is_true(unclear) -- secret GUIDs and no token compare: the caller must not add the target again
+    end)
+
     it("never uses a secret GUID as identity", function()
         local ns = setup({
             player = {},

@@ -1,5 +1,5 @@
 -- PaTiAggro (the former PaTiTank, renamed 2026-10-14): aggro for every role. Display only; no secure frames.
--- Three sections: AGGRO TOTAL (tank: enemies you hold; healer/damage: your highest threat), AGGRO TARGET (you and your
+-- Three sections: AGGRO TOTAL (tank: enemies you hold; healer/damage: enemy cards), AGGRO TARGET (you and your
 -- group on your target, sorted) and AGGRO TEAM (tank: enemies that need you; healer/damage: enemies on you).
 -- The view follows the "My role" setting (Logic.EffectiveRole).
 local addonName, ns = ...
@@ -43,7 +43,7 @@ end
 
 -- Window ---------------------------------------------------------------------------------------
 -- Three sections, top to bottom (owner 2026-10-14), with clear space between them:
---   5 / 6  AGGRO TOTAL           large number, small caption (healer/damage: your highest threat)
+--   5 / 6  AGGRO TOTAL           large number, small caption (healer/damage: enemy cards with your percent)
 --   bars, then AGGRO TARGET <enemy>   you and your group on your target, sorted: "Name (Role)" and a percent bar
 --   AGGRO TEAM, then rows        the enemies that need you (healer/damage: ON YOU — the enemies that attack you)
 
@@ -86,7 +86,8 @@ local LARGE, SMALL, CARD_TEXT = 48, 24, 14
 local LARGE_WIDTH = LARGE + UI.Spacing.MD
 local SMALL_WIDTH = math.floor((BAR_WIDTH - LARGE_WIDTH - UI.Spacing.SM - (Aggro.MAX_SELF_CARDS - 1) * UI.Spacing.XS)
     / Aggro.MAX_SELF_CARDS)
-local CARD_COLOR = { GOOD = "TextMuted", WARNING = "Warning", DANGER = "Danger", AGGRO = "Danger", UNKNOWN = "TextMuted" }
+local CARD_COLOR = { GOOD = "TextMuted", WARNING = "Warning", DANGER = "Danger", AGGRO = "Danger",
+    UNKNOWN = "TextMuted" }
 local NO_PORTRAIT = [[Interface\Icons\INV_Misc_QuestionMark]]
 
 local function newCard(size)
@@ -430,38 +431,31 @@ end
 
 local SELF_COLOR = { GOOD = "Text", WARNING = "Warning", DANGER = "Danger", AGGRO = "Danger", UNKNOWN = "TextMuted" }
 
--- Your threat on each enemy you could pull (healer/damage): every enemy the group fights — healing threat lands on all
--- of them — plus your target, also before anyone attacked it (0 %). Each entry is a SelfThreat result with the unit
--- token for the portrait, the name (may be secret: SetText only) and whether it is your target.
-local function selfEntries(enemies)
+-- The AGGRO TOTAL entries (Aggro.SelfEntries); your target is added from here when the scan does not have it.
+local function selfEntries(enemies, targetUnclear)
     if testMode then return TEST_SELF_CARDS end
-    local list, hasTarget = {}, false
-    local function add(unit, name, isTarget, status, percent)
-        local result = Aggro.SelfThreat(role, status, percent)
-        if not result and isTarget and Threat.ZeroThreat(unit) then result = { state = "GOOD", percent = 0 } end
-        if not result then return end
-        result.unit, result.name, result.isTarget = unit, name, isTarget
-        list[#list + 1] = result
-        hasTarget = hasTarget or isTarget
-    end
-    for _, enemy in ipairs(enemies) do
-        add(enemy.unit, enemy.name, enemy.isTarget, enemy.playerStatus, enemy.playerPercent)
-    end
-    if not hasTarget and UnitExists("target") then
+    local target
+    if not targetUnclear and UnitExists("target") then
         local status, percent = Threat.Self("target")
-        add("target", UnitName("target"), true, status, percent)
+        target = { unit = "target", name = UnitName("target"), status = status, percent = percent,
+            zero = Threat.ZeroThreat("target") }
     end
-    return list
+    return Aggro.SelfEntries(role, enemies, target)
 end
 
--- SetPortraitTexture takes the unit token itself; no unit data is read. Test mode: fixed icons.
+-- SetPortraitTexture takes the unit token itself; no unit data is read. Drawn again only when the card shows another
+-- token or another enemy (readable GUID; without one every paint), not 10 times a second in combat. Test mode: icons.
 local function paintCard(card, entry)
     card:SetShown(entry ~= nil)
     if not entry then return end
     if entry.unit and SetPortraitTexture then
-        SetPortraitTexture(card.portrait, entry.unit)
+        if card.drawn ~= entry.unit or card.drawnGuid ~= entry.guid or entry.guid == nil then
+            SetPortraitTexture(card.portrait, entry.unit)
+            card.drawn, card.drawnGuid = entry.unit, entry.guid
+        end
     else
         card.portrait:SetTexture(entry.icon or NO_PORTRAIT)
+        card.drawn, card.drawnGuid = nil, nil
     end
     card.frame:SetColorTexture(UI.Color(CARD_COLOR[entry.state] or "TextMuted"))
     local name = entry.key and L[entry.key] or entry.name
@@ -476,8 +470,8 @@ local function paintCard(card, entry)
 end
 
 -- AGGRO TOTAL, healer/damage: the enemy cards (see newCard). Returns whether there is anything to show and the height.
-local function paintSelfTotal(enemies)
-    local large, small, hidden = Aggro.SelfCards(selfEntries(enemies), Aggro.MAX_SELF_CARDS)
+local function paintSelfTotal(enemies, targetUnclear)
+    local large, small, hidden = Aggro.SelfCards(selfEntries(enemies, targetUnclear), Aggro.MAX_SELF_CARDS)
     placeLargeCard(#small == 0)
     paintCard(largeCard, large)
     for index, card in ipairs(smallCards) do paintCard(card, small[index]) end
@@ -489,14 +483,15 @@ end
 local function paintAggro()
     local tank = role == "TANK"
     local enemies
-    if testMode then enemies = tank and TEST_ENEMIES or {} else enemies = Threat.Scan() end
+    local targetUnclear
+    if testMode then enemies = tank and TEST_ENEMIES or {} else enemies, targetUnclear = Threat.Scan() end
     local summary, hasTotal, height
     setCardView(not tank)
     if tank then
         summary = Aggro.Summarize(enemies)
         hasTotal, height = summary.total > 0, LINE + 2
     else
-        hasTotal, height = paintSelfTotal(enemies)
+        hasTotal, height = paintSelfTotal(enemies, targetUnclear)
         summary = { rows = {} } -- no list of the enemies on you (owner 2026-10-21): the AGGRO TARGET bar shows it
     end
     local count = math.min(#summary.rows, Aggro.MAX_ROWS)

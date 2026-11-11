@@ -72,9 +72,10 @@ content are shown: no AGGRO TOTAL without enemies, no AGGRO TARGET without an en
 
 **AGGRO TOTAL**
 - Tank: how many of the enemies your group fights you hold (`5 / 6`)
-- Healer/damage: your highest threat over your target and every enemy the group fights (healing threat lands on all
-  of them) — white below 70 %, yellow from 70 %, red from 90 %. An enemy that attacks you shows only in
-  AGGRO TARGET (the red "has aggro" bar), not a second time here
+- Healer/damage: a card per enemy you could pull — portrait, name and your threat on it (healing threat lands on
+  every enemy the group fights). The enemy you target is large, up to four others stand beside it at half the size,
+  worst first ("+2" for the rest); a single enemy uses the whole width. Frame and percent: grey below 70 %, yellow
+  from 70 %, red from 90 % or when it attacks you. The cards are not clickable
 
 **AGGRO TARGET** — the caption with your target's name above the bars
 - As healer or damage: **"not the tank's target"** in yellow on the right when you have another enemy targeted than

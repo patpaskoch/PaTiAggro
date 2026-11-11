@@ -102,6 +102,7 @@ end
 -- All enemies the group fights, each with .state (Aggro.Classify). Called at most every SCAN_DELAY seconds.
 function Threat.Scan()
     local enemies, seen = {}, {}
+    local targetGuid = isEnemy("target") and guidOf("target") or nil -- marks your target under its nameplate token
     local function consider(unit, needsGuid)
         if not isEnemy(unit) then return end
         local id = guidOf(unit)
@@ -113,6 +114,7 @@ function Threat.Scan()
         seen[id] = true
         local enemy = readEnemy(unit)
         enemy.guid = id ~= unit and id or nil -- readable GUID only (number stability in Aggro.Number)
+        enemy.isTarget = unit == "target" or (enemy.guid ~= nil and enemy.guid == targetGuid)
         enemy.state = Aggro.Classify(enemy)
         if enemy.state then enemies[#enemies + 1] = enemy end
     end

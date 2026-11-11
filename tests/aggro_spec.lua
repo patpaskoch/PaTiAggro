@@ -187,6 +187,39 @@ describe("Aggro.SelfThreat", function()
     end)
 end)
 
+describe("Aggro.SelfCards", function()
+    it("puts your target large, the others small and worst first", function()
+        local Aggro = load()
+        local large, small, hidden = Aggro.SelfCards({
+            { state = "GOOD", percent = 12, name = "Wolf" },
+            { state = "WARNING", percent = 78, name = "Zombie", isTarget = true },
+            { state = "DANGER", percent = 92, name = "Ghul" }, { state = "WARNING", percent = 75, name = "Ratte" },
+        }, 4)
+        assert.equal("Zombie", large.name)
+        assert.same({ "Ghul", "Ratte", "Wolf" }, { small[1].name, small[2].name, small[3].name })
+        assert.equal(0, hidden)
+    end)
+
+    it("without a target the worst enemy is large; ties keep the scan order; extra ones are counted", function()
+        local Aggro = load()
+        local large, small, hidden = Aggro.SelfCards({
+            { state = "GOOD", percent = 10, name = "A" }, { state = "AGGRO", percent = 100, name = "B" },
+            { state = "GOOD", percent = 10, name = "C" }, { state = "UNKNOWN", name = "D" },
+        }, 2)
+        assert.equal("B", large.name)
+        assert.same({ "D", "A" }, { small[1].name, small[2].name }) -- UNKNOWN ranks above GOOD; A before C
+        assert.equal(1, hidden)
+    end)
+
+    it("a single enemy is the large card alone; nothing for an empty list", function()
+        local Aggro = load()
+        local large, small = Aggro.SelfCards({ { state = "GOOD", percent = 0, name = "A" } }, 4)
+        assert.equal("A", large.name)
+        assert.same({}, small)
+        assert.is_nil((Aggro.SelfCards({}, 4)))
+    end)
+end)
+
 describe("Aggro.SelfWorst", function()
     it("picks the worst state, then the higher percent, and counts enemies on you", function()
         local Aggro = load()

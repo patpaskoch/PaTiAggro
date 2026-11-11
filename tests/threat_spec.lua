@@ -51,6 +51,8 @@ describe("Threat.Scan", function()
         assert.equal(2, count) -- target and nameplate1 are the same enemy
         assert.equal("nameplate1", enemies.Skelettkrieger.unit) -- keeps its nameplate token (for the plate marker)
         assert.equal("G1", enemies.Skelettkrieger.guid) -- readable GUID: key for stable numbers
+        assert.is_true(enemies.Skelettkrieger.isTarget) -- your target, found under its nameplate token
+        assert.is_false(enemies.Kultist.isTarget)
     end)
 
     it("turns secret threat or member data into UNKNOWN, never CONTROLLED", function()

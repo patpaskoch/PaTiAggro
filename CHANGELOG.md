@@ -5,6 +5,14 @@ History before this file: `git log`.
 
 ## [Unreleased]
 ### Changed
+- Healer/damage view, AGGRO TOTAL (owner 2026-11-11): enemy cards instead of one number — the portrait and name of
+  each enemy you could pull, with your percent below. The enemy you target is large; up to four others stand beside it
+  at half the size, worst first ("+2" when more do not fit); a single enemy uses the whole width. The frame around a
+  portrait takes the danger colour (yellow from 70 %, red from 90 % or when it attacks you). Your target shows as soon
+  as you target it (0 %); an enemy that attacks you says "on you". The cards are not clickable: targeting from
+  addon code is not possible safely (F17).
+- Tank view and "My role: Auto" show the enemy cards too (owner 2026-11-11), held / total ("4 / 5") on the
+  caption line; enemies you lost come first, in red.
 - Healer/damage view: an enemy on you shows once (owner 2026-10-21: it stood in three places) — as the red
   "has aggro" bar in AGGRO TARGET. AGGRO TOTAL shows only your percent (no "AGGRO on you!"), and the "ON YOU" list
   with its nameplate numbers is gone.

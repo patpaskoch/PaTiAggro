@@ -279,3 +279,21 @@ Panel-Zeilen sind nicht klickbar (technisch blockiert, F17) und werden nicht get
   „AGGRO auf dir!“; kein Bereich „AUF DIR“, keine Nummer am Namensschild. Als Tank alles wie bisher
 - [ ] PT-AGGRO-032 `/paggro test` mit Rolle Heiler oder Schaden: oben „78 %“ (gelb), AGGRO ZIEL mit den Balken, kein
   Bereich „AUF DIR“; mit Rolle Tank die bisherige Testansicht
+  - Owner 2026-11-11: statt „78 %“ Gegnerkarten mit Bild und Namen → neu in PT-AGGRO-033…037
+  - MANUAL RETEST REQUIRED
+
+## Gegnerkarten (Heiler/Schaden, 2026-11-11)
+
+- [ ] PT-AGGRO-033 `/paggro test` als Heiler oder Schaden: unter „AGGRO GESAMT“ groß das Bild des Zombies mit Namen und
+  „78 %“ (gelber Rahmen), daneben halb so groß Ghul (40 %) und Pestratte (12 %, Fragezeichen-Bild); nichts überlappt,
+  lange Namen werden abgeschnitten
+- [ ] PT-AGGRO-034 Echter Kampf: dein anvisierter Gegner ist groß mit seinem Porträt, die anderen Gegner der Gruppe
+  klein daneben; Ziel wechseln → der neue Gegner wird groß, der alte rückt klein daneben
+- [ ] PT-AGGRO-035 Nur ein Gegner: das große Bild nimmt die ganze Breite, Name und Prozent stehen groß rechts daneben
+- [ ] PT-AGGRO-036 Rahmenfarbe: unter 70 % grau, ab 70 % gelb, ab 90 % oder wenn er dich angreift rot; die Prozentzahl
+  ab 70 % in derselben Farbe
+- [ ] PT-AGGRO-037 Mehr als fünf Gegner: vier kleine Karten, rechts oben „+N“ für den Rest; Gegner anvisieren, den noch
+  niemand angegriffen hat: groß mit „0 %“; ein Gegner, der dich angreift, zeigt „auf dir“ (rot) statt „unklar“
+- [ ] PT-AGGRO-038 Als Tank und bei „Meine Rolle: Auto“ ebenfalls Gegnerkarten; rechts oben „x / y“ (gelb, wenn dir einer
+  fehlt); Gegner, die du verloren hast, zuerst und rot; `/paggro test` als Tank: sechs Gegner, Ghul rot (45 %)
+

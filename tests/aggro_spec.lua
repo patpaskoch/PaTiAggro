@@ -187,22 +187,79 @@ describe("Aggro.SelfThreat", function()
     end)
 end)
 
-describe("Aggro.SelfWorst", function()
-    it("picks the worst state, then the higher percent, and counts enemies on you", function()
-        local Aggro = load()
-        local worst = Aggro.SelfWorst({ { state = "GOOD", percent = 20 }, { state = "WARNING", percent = 71 },
-            { state = "WARNING", percent = 85 } })
-        assert.equal("WARNING", worst.state)
-        assert.equal(85, worst.percent)
-        worst = Aggro.SelfWorst({ { state = "AGGRO" }, { state = "DANGER", percent = 95 }, { state = "AGGRO" } })
-        assert.equal("AGGRO", worst.state)
-        assert.equal(2, worst.onYou)
-        assert.is_nil(Aggro.SelfWorst({}))
+describe("Aggro.SelfEntries", function()
+    local function scanned(name, status, percent, isTarget)
+        return { unit = "nameplate" .. name, name = name, playerStatus = status, playerPercent = percent,
+            isTarget = isTarget }
+    end
+
+    it("takes every scanned enemy with your threat and marks the target", function()
+        local list = load().SelfEntries("HEALER", { scanned("A", 0, 80, true), scanned("B", 1, 20, false) }, nil)
+        assert.equal(2, #list)
+        assert.same({ "WARNING", 80, true, "nameplateA" },
+            { list[1].state, list[1].percent, list[1].isTarget, list[1].unit })
+        assert.is_false(list[2].isTarget)
     end)
 
-    it("lets an unreadable enemy beat WARNING but not a readable DANGER", function()
+    it("adds the target once: not again when the scan has it, 0 % when nobody attacked it yet", function()
         local Aggro = load()
-        assert.equal("UNKNOWN", Aggro.SelfWorst({ { state = "WARNING", percent = 80 }, { state = "UNKNOWN" } }).state)
-        assert.equal("DANGER", Aggro.SelfWorst({ { state = "DANGER", percent = 92 }, { state = "UNKNOWN" } }).state)
+        local target = { unit = "target", name = "A", zero = true }
+        assert.equal(1, #Aggro.SelfEntries("DAMAGER", { scanned("A", 0, 30, true) }, target))
+        local list = Aggro.SelfEntries("DAMAGER", { scanned("B", 0, 30, false) }, target)
+        assert.equal(2, #list)
+        assert.same({ "GOOD", 0, true, "target" }, { list[2].state, list[2].percent, list[2].isTarget, list[2].unit })
+        list = Aggro.SelfEntries("DAMAGER", { scanned("A", nil, nil, true) }, nil)
+        assert.same({ "GOOD", 0 }, { list[1].state, list[1].percent }) -- scanned target, you have no threat yet
+    end)
+
+    it("tank: every enemy the group fights by its aggro state, lost ones included", function()
+        local list = load().SelfEntries("TANK", {
+            { name = "A", state = "CONTROLLED", playerStatus = 3, playerPercent = 100 },
+            { name = "B", state = "LOST", playerStatus = nil, playerPercent = nil },
+            { name = "C", state = "DANGER", playerStatus = 2, playerPercent = 100 },
+            { name = "D", state = "UNKNOWN", playerPercent = 50 },
+        }, nil)
+        assert.same({ "GOOD", "DANGER", "WARNING", "UNKNOWN" }, { list[1].state, list[2].state, list[3].state, list[4].state })
+        assert.same({ 100, nil, 100 }, { list[1].percent, list[2].percent, list[3].percent })
+        assert.is_nil(list[4].percent) -- unknown state: no percent pretends to be sure
+    end)
+
+    it("leaves out enemies you are not on and a target that is no living enemy", function()
+        local target = { unit = "target", zero = false }
+        assert.same({}, load().SelfEntries("HEALER", { scanned("B", nil, nil, false) }, target))
     end)
 end)
+
+describe("Aggro.SelfCards", function()
+    it("puts your target large, the others small and worst first", function()
+        local Aggro = load()
+        local large, small, hidden = Aggro.SelfCards({
+            { state = "GOOD", percent = 12, name = "Wolf" },
+            { state = "WARNING", percent = 78, name = "Zombie", isTarget = true },
+            { state = "DANGER", percent = 92, name = "Ghul" }, { state = "WARNING", percent = 75, name = "Ratte" },
+        }, 4)
+        assert.equal("Zombie", large.name)
+        assert.same({ "Ghul", "Ratte", "Wolf" }, { small[1].name, small[2].name, small[3].name })
+        assert.equal(0, hidden)
+    end)
+
+    it("without a target the worst enemy is large; ties keep the scan order; extra ones are counted", function()
+        local Aggro = load()
+        local large, small, hidden = Aggro.SelfCards({
+            { state = "GOOD", percent = 10, name = "A" }, { state = "AGGRO", percent = 100, name = "B" },
+            { state = "GOOD", percent = 10, name = "C" }, { state = "UNKNOWN", name = "D" },
+        }, 2)
+        assert.equal("B", large.name)
+        assert.same({ "D", "A" }, { small[1].name, small[2].name }) -- UNKNOWN ranks above GOOD; A before C
+        assert.equal(1, hidden)
+    end)
+
+    it("a single enemy is the large card alone; nothing for an empty list", function()
+        local Aggro = load()
+        local large, small = Aggro.SelfCards({ { state = "GOOD", percent = 0, name = "A" } }, 4)
+        assert.equal("A", large.name)
+        assert.same({}, small)
+        assert.is_nil((Aggro.SelfCards({}, 4)))
+    end)
+end)
+

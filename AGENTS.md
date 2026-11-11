@@ -5,7 +5,8 @@ Addon facts: `../../PaTiAdmin/docs/ARCHITECTURE.md` · open issues: `../../PaTiA
 
 ## This addon
 - Purpose: aggro for every role. Tank view: target, your threat on it (colour by status), who pulls it next, aggro
-  control monitor. Healer/damage view: your highest threat over all fought enemies, enemies that attack you.
+  control monitor. Healer/damage view: enemy cards (portrait, name, your percent; target large, others half size), enemies
+  that attack you.
   The view follows `DB.myRole` (`Logic.EffectiveRole`: chosen role, else the group role, else tank; never the class).
   Display only: never targets, taunts or clicks anything.
 - Files: `Logic.lua` (settings, threat value; pure, tested) · `Aggro.lua` (aggro states/summary, next threat, own threat by role; pure, tested) ·

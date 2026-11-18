@@ -166,10 +166,11 @@ local function placeLargeCard(alone)
         largeCard.value:SetFontObject(UI.Fonts.Text)
     end
 end
--- AGGRO TARGET: the caption small above the bars (owner 2026-10-14), the enemy name beside it.
+-- AGGRO TARGET: the caption small above the bars (owner 2026-10-14). No enemy name beside it (owner 2026-11-18): the
+-- large enemy card in AGGRO TOTAL already shows your target's portrait and name.
 local now = newSection("AGGRO_TARGET")
 now.title:SetPoint("TOPLEFT", PAD, 0)
-now.value:SetPoint("LEFT", now.title, "RIGHT", UI.Spacing.SM, 0)
+now.value:Hide()
 -- Hint on the right of the caption line (owner 2026-10-17): healer/damage attacking another enemy than the tank.
 now.hint = now:CreateFontString(nil, "OVERLAY", UI.Fonts.Text)
 now.hint:SetPoint("TOPRIGHT", -PAD, 0)
@@ -177,9 +178,6 @@ now.hint:SetJustifyH("RIGHT")
 UI.Paint(now.hint, "SetTextColor", "Warning")
 UI.BindText(now.hint, "NOT_TANK_TARGET")
 now.hint:Hide()
-now.value:SetPoint("RIGHT", now, "RIGHT", -PAD, 0) -- paintHint makes room for the hint while it is shown
-now.value:SetJustifyH("LEFT")
-UI.Paint(now.value, "SetTextColor", "TextMuted") -- the enemy name: light grey like the window title
 -- AGGRO TEAM: the caption small above the rows.
 local team = newSection("AGGRO_TEAM")
 team.title:SetPoint("TOPLEFT", PAD, 0)
@@ -333,11 +331,6 @@ local applyLayout -- defined below; the sections change the window height
 local function paintHint()
     local show = role ~= nil and role ~= "TANK" and (testMode or Threat.OffTankTarget() == true)
     now.hint:SetShown(show)
-    if show then
-        now.value:SetPoint("RIGHT", now.hint, "LEFT", -UI.Spacing.SM, 0)
-    else
-        now.value:SetPoint("RIGHT", now, "RIGHT", -PAD, 0)
-    end
 end
 
 -- AGGRO TARGET: you and your group on your target.
@@ -345,13 +338,10 @@ local function paintNow()
     local list
     if testMode then
         list = TEST_CURRENT
-        now.value:SetText(L.TEST_TARGET)
     elseif UnitExists("target") then
         list = Threat.Current("target")
-        now.value:SetText(UnitName("target")) -- may be secret: SetText only
     else
         list = {}
-        now.value:SetText(L.AGGRO_NONE)
     end
     paintHint()
     local current = Aggro.CurrentRows(list, MAX_CURRENT)

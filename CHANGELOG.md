@@ -4,6 +4,10 @@ Format: `## [Unreleased]` / `## [x.y.z] - YYYY-MM-DD` with Added, Changed, Fixed
 History before this file: `git log`.
 
 ## [Unreleased]
+### Added
+- Locking or unlocking the window (••• menu, slash command or settings) now answers with a chat line,
+  e.g. "Window locked." (PaTiShared, owner 2026-11-07).
+
 ### Changed
 - AGGRO TARGET shows only the bars, without its caption and the enemy name (owner 2026-11-18): the large enemy card in
   AGGRO TOTAL already shows your target's portrait and name. The "not the tank's target" hint takes its own line above

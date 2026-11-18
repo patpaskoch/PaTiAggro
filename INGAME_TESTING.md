@@ -299,4 +299,8 @@ Panel-Zeilen sind nicht klickbar (technisch blockiert, F17) und werden nicht get
 - [ ] PT-AGGRO-039 „AGGRO ZIEL“ steht ohne Gegnernamen daneben (Owner 2026-11-18: der Name steht schon groß auf der
   Karte oben); als Heiler/Schaden steht „nicht das Ziel des Tanks“ weiter rechts in derselben Zeile; `/paggro test`
   und echtes Ziel, jede Rolle; kein Lua-Fehler
+- [ ] PT-AGGRO-040 Keine Überschrift „AGGRO ZIEL“ mehr (Owner 2026-11-18): unter den Gegnerkarten gleich die Balken
+  (du und die Gruppe auf deinem Ziel), ohne Lücke darüber; als Heiler/Schaden mit anderem Ziel als der Tank erscheint
+  „nicht das Ziel des Tanks“ in einer eigenen Zeile über den Balken und verschwindet wieder, Fenster passt sich an;
+  `/paggro test` und echtes Ziel; kein Lua-Fehler
 

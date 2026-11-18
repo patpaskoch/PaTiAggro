@@ -5,8 +5,9 @@ History before this file: `git log`.
 
 ## [Unreleased]
 ### Changed
-- AGGRO TARGET no longer repeats the enemy name beside its caption (owner 2026-11-18): the large enemy card in AGGRO
-  TOTAL already shows your target's portrait and name.
+- AGGRO TARGET shows only the bars, without its caption and the enemy name (owner 2026-11-18): the large enemy card in
+  AGGRO TOTAL already shows your target's portrait and name. The "not the tank's target" hint takes its own line above
+  the bars only while it is shown.
 - Healer/damage view, AGGRO TOTAL (owner 2026-11-11): enemy cards instead of one number — the portrait and name of
   each enemy you could pull, with your percent below. The enemy you target is large; up to four others stand beside it
   at half the size, worst first ("+2" when more do not fit); a single enemy uses the whole width. The frame around a

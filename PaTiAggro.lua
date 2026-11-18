@@ -166,12 +166,12 @@ local function placeLargeCard(alone)
         largeCard.value:SetFontObject(UI.Fonts.Text)
     end
 end
--- AGGRO TARGET: the caption small above the bars (owner 2026-10-14). No enemy name beside it (owner 2026-11-18): the
--- large enemy card in AGGRO TOTAL already shows your target's portrait and name.
+-- AGGRO TARGET: only the bars, no caption and no enemy name (owner 2026-11-18): the large enemy card in AGGRO TOTAL
+-- already shows your target's portrait and name.
 local now = newSection("AGGRO_TARGET")
-now.title:SetPoint("TOPLEFT", PAD, 0)
+now.title:Hide()
 now.value:Hide()
--- Hint on the right of the caption line (owner 2026-10-17): healer/damage attacking another enemy than the tank.
+-- Hint line above the bars, only while shown (owner 2026-10-17): healer/damage attacking another enemy than the tank.
 now.hint = now:CreateFontString(nil, "OVERLAY", UI.Fonts.Text)
 now.hint:SetPoint("TOPRIGHT", -PAD, 0)
 now.hint:SetJustifyH("RIGHT")
@@ -201,7 +201,6 @@ local NAME_WIDTH = 110
 local members = {}
 for index = 1, MAX_CURRENT do
     local bar = CreateFrame("StatusBar", nil, now)
-    bar:SetPoint("TOPLEFT", PAD, -CAPTION - (index - 1) * LINE - (LINE - MEMBER_BAR) / 2)
     bar:SetSize(BAR_WIDTH, MEMBER_BAR)
     bar:SetStatusBarTexture(UI.WHITE)
     bar:SetMinMaxValues(0, 100)
@@ -254,6 +253,19 @@ for index = 1, Aggro.MAX_ROWS do
     rows[index] = { marker = marker, number = number, name = name, holder = holder, holderTag = holderTag }
 end
 
+-- The bars start at the top of AGGRO TARGET, or one caption line lower while the hint is shown.
+local nowTop
+local function placeMembers(top)
+    if top == nowTop then return false end
+    nowTop = top
+    for index, member in ipairs(members) do
+        member.bar:ClearAllPoints()
+        member.bar:SetPoint("TOPLEFT", PAD, -top - (index - 1) * LINE - (LINE - MEMBER_BAR) / 2)
+    end
+    return true
+end
+placeMembers(0)
+
 local shownMembers, shownRows = 0, 0
 local lastNumbers = {} -- readable GUID -> row number of the last paint (Aggro.Number keeps numbers stable)
 local rowUnit = {}     -- row index -> nameplate token its number belongs to (cleared on plate events)
@@ -267,7 +279,7 @@ local totalHeight = LINE + 2 -- AGGRO TOTAL: one line (tank) or the enemy cards 
 local function placeSections()
     local layout = {
         { section = total, shown = totalShown, height = totalHeight, gap = 0 },
-        { section = now, shown = shownMembers > 0, height = CAPTION + shownMembers * LINE, gap = GAP.target },
+        { section = now, shown = shownMembers > 0, height = nowTop + shownMembers * LINE, gap = GAP.target },
         { section = team, shown = shownRows > 0, height = CAPTION + shownRows * LINE, gap = GAP.team },
     }
     local top, used = UI.Spacing.SM, false
@@ -331,6 +343,7 @@ local applyLayout -- defined below; the sections change the window height
 local function paintHint()
     local show = role ~= nil and role ~= "TANK" and (testMode or Threat.OffTankTarget() == true)
     now.hint:SetShown(show)
+    if placeMembers(show and CAPTION or 0) and DB then applyLayout() end
 end
 
 -- AGGRO TARGET: you and your group on your target.

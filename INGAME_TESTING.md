@@ -44,13 +44,27 @@ Regeln und Eintragen von Ergebnissen: [PaTiAdmin/docs/TESTING.md](https://github
 
 ## Fenster
 
-- [ ] PT-TANK-010 `/pt` bzw. `/patitank` blendet das Fenster ein und aus; `/pt show`, `/pt hide`
-- [ ] PT-TANK-011 Fenster am Header verschieben (entsperrt)
-- [ ] PT-TANK-012 Position bleibt nach `/reload`
-- [ ] PT-TANK-013 Lock/Unlock (••• und `/pt lock` / `unlock`): gesperrt nicht verschiebbar
-- [ ] PT-TANK-014 Größe (Scale) wirkt
-- [ ] PT-TANK-015 Einstellungen öffnen (`/pt settings` und •••) und speichern
-- [ ] PT-TANK-016 Collapse/Expand über •••, Zustand bleibt nach `/reload`
+- [x] PT-TANK-010 `/pt` bzw. `/patitank` blendet das Fenster ein und aus; `/pt show`, `/pt hide`
+  - ✅ VERIFIED 2026-11-10
+  - Owner: Testseite „Geht“
+- [x] PT-TANK-011 Fenster am Header verschieben (entsperrt)
+  - ✅ VERIFIED 2026-11-10
+  - Owner: Testseite „Geht“
+- [x] PT-TANK-012 Position bleibt nach `/reload`
+  - ✅ VERIFIED 2026-11-08
+  - Owner: /patitest 2× grün in-game (vor und nach /reload, 42 ok, 0 Fehler; 7 PaTi-Addons installiert)
+- [x] PT-TANK-013 Lock/Unlock (••• und `/pt lock` / `unlock`): gesperrt nicht verschiebbar
+  - ✅ VERIFIED 2026-11-10
+  - Owner: auf der Ingame-Testseite als „Geht“ abgehakt.
+- [x] PT-TANK-014 Größe (Scale) wirkt
+  - ✅ VERIFIED 2026-11-10
+  - Owner: auf der Ingame-Testseite als „Geht“ abgehakt.
+- [x] PT-TANK-015 Einstellungen öffnen (`/pt settings` und •••) und speichern
+  - ✅ VERIFIED 2026-11-10
+  - Owner: auf der Ingame-Testseite als „Geht“ abgehakt.
+- [x] PT-TANK-016 Collapse/Expand über •••, Zustand bleibt nach `/reload`
+  - ✅ VERIFIED 2026-11-10
+  - Owner: auf der Ingame-Testseite als „Geht“ abgehakt.
 - [x] PT-TANK-017 Test Mode `/pt test`: 6 Gegner, „5 / 6“, Ghul → Heiler, Zombie knapp; Zeilen `1 Ghul`, `2 Zombie`
   ohne Namensschild-Nummern
   - ✅ VERIFIED 2026-11-18
@@ -68,7 +82,9 @@ Regeln und Eintragen von Ergebnissen: [PaTiAdmin/docs/TESTING.md](https://github
 ## SavedVariables
 
 - [ ] PT-TANK-030 Einstellungen bleiben nach `/reload`
-- [ ] PT-TANK-031 Einstellungen bleiben nach Relog
+- [x] PT-TANK-031 Einstellungen bleiben nach Relog
+  - ✅ VERIFIED 2026-11-10
+  - Owner: 5 Spielsitzungen mit wiederholtem Einloggen, keine Auffälligkeiten
 - [x] PT-TANK-032 Update mit alten Einstellungen: Position und Werte bleiben
   - ✅ VERIFIED 2026-11-17
   - Owner: auf der Ingame-Test-Seite „Geht“ (2026-11-17), nachgetragen 2026-11-18.
@@ -120,6 +136,7 @@ Regeln und Eintragen von Ergebnissen: [PaTiAdmin/docs/TESTING.md](https://github
 - [ ] PT-TANK-063 Nicht lesbare Daten (UNKNOWN): graue Zeile „unklar“, nie „unter Kontrolle“
 - [ ] PT-TANK-064 Mob auf dem Heiler: „→ Heiler“ innerhalb von ~1 s
 - [ ] PT-TANK-065 Mob auf einem DD: „→ DD“ (bzw. Name oder „anderer Spieler“ ohne Rolle)
+  - 🔧 FIX IMPLEMENTED 2026-11-08 (Audit: ohne Rolle/Namen stand der rohe Schlüssel „OTHER“ statt „anderer Spieler“) – MANUAL RETEST REQUIRED
 - [ ] PT-TANK-066 Tote Gegner verschwinden aus Zählung und Zeilen
 
 ## Nummerierung
@@ -152,7 +169,9 @@ Panel-Zeilen sind nicht klickbar (technisch blockiert, F17) und werden nicht get
 
 ## Combat / Sicherheit
 
-- [ ] PT-TANK-100 Kein Lua-Fehler im Kampf
+- [x] PT-TANK-100 Kein Lua-Fehler im Kampf
+  - ✅ VERIFIED 2026-11-10
+  - Owner: 3 Stunden gespielt inkl. Kampf, kein Lua-Fehler (PaTiTest sessionErrors 2026-11-10 19:40–23:01 leer)
 - [ ] PT-TANK-101 Keine `ADDON_ACTION_BLOCKED` / `ADDON_ACTION_FORBIDDEN`
 - [ ] PT-TANK-102 `taint.log` (`/console taintLog 1`) ohne PaTiTank-Eintrag
 - [ ] PT-TANK-103 Menü und Slash-Befehle im Kampf ohne Fehler
@@ -160,7 +179,10 @@ Panel-Zeilen sind nicht klickbar (technisch blockiert, F17) und werden nicht get
 ## Combined
 
 - [ ] PT-TANK-110 Zusammen mit allen PaTi-Addons geladen: kein Lua-Fehler
-- [ ] PT-TANK-111 Keine Slash-Command-Kollision: `/pt` und `/patitank` antworten nur PaTiTank
+- [x] PT-TANK-111 Keine Slash-Command-Kollision: `/pt` und `/patitank` antworten nur PaTiTank
+  - ✅ VERIFIED 2026-11-08
+  - Owner: /patitest 2× grün in-game (vor und nach /reload, 42 ok, 0 Fehler; 7 PaTi-Addons installiert)
+  - Hinweis: Befehle heißen heute `/paggro` `/patiaggro` `/pt` (`/patitank` gibt es nicht mehr); keine Kollision gemeldet.
 - [ ] PT-TANK-112 Eigene Einstellungen speichern nur PaTiTank-Werte; Fenster erscheint in PaTiSuite
 
 ## Umbenennung (PaTiAggro)

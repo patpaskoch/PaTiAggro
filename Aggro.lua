@@ -97,15 +97,15 @@ function Aggro.Alerts(rows, numbers, detailOf, unknownName, isSecret)
     return list
 end
 
--- What to show for the member holding a lost enemy: a role key, "NAME" (show holder.name as-is) or "OTHER".
+-- What to show for the member holding a lost enemy: a role key, "NAME" (show holder.name as-is) or "OTHER_PLAYER".
 -- Role first (quickest to read), then name, then "other player".
 function Aggro.HolderLabel(holder)
-    if not holder then return "OTHER" end
+    if not holder then return "OTHER_PLAYER" end
     if holder.role == "TANK" or holder.role == "HEALER" or holder.role == "DAMAGER" or holder.role == "PET" then
         return "ROLE_" .. holder.role
     end
     if holder.hasName then return "NAME" end
-    return "OTHER"
+    return "OTHER_PLAYER"
 end
 
 -- Thresholds of the scaled percent (owner 2026-10-14: 70/90 suite wide): 100 = that member pulls aggro now (WoW

@@ -57,7 +57,6 @@ The window has three sections, top to bottom, with clear space between them:
 ```
 5 / 6  AGGRO TOTAL
 
-AGGRO TARGET  Test enemy
 [ Brom (Tank)              has aggro ]   green: the right one has it
 [ Lyra (Damage)                 84 % ]   yellow from 70 %, red from 90 % (100 % = they take it)
 [ Mira (Healer)                 35 % ]
@@ -67,8 +66,8 @@ AGGRO TEAM
 ▌1 Ghoul                Mira (Healer)    red: Mira has it
 ▌2 Zombie               Lyra (Damage)    yellow: you still hold it, Lyra is about to take it
 ```
-The section names are small captions in the accent colour, like PaTiHeal's "TARGET" mark. Only sections with
-content are shown: no AGGRO TOTAL without enemies, no AGGRO TARGET without an enemy target, no AGGRO TEAM without rows.
+The section names are small captions in the accent colour, like PaTiHeal's "TARGET" mark; AGGRO TARGET has none
+(the enemy card above already names your target). Only sections with content are shown: no AGGRO TOTAL without enemies, no AGGRO TARGET without an enemy target, no AGGRO TEAM without rows.
 
 **AGGRO TOTAL**
 - Tank: the same enemy cards (lost enemies first, in red) and how many of them you hold (`5 / 6`)
@@ -77,8 +76,8 @@ content are shown: no AGGRO TOTAL without enemies, no AGGRO TARGET without an en
   worst first ("+2" for the rest); a single enemy uses the whole width. Frame and percent: grey below 70 %, yellow
   from 70 %, red from 90 % or when it attacks you. The cards are not clickable
 
-**AGGRO TARGET** — the caption with your target's name above the bars
-- As healer or damage: **"not the tank's target"** in yellow on the right when you have another enemy targeted than
+**AGGRO TARGET** — the bars right below the enemy cards, without a caption
+- As healer or damage: **"not the tank's target"** in yellow on its own line above the bars when you have another enemy targeted than
   the tank (the tank is the member with the WoW role Tank). Only a hint — nothing is targeted for you
 - You and every group member (and pet) on its threat list, sorted: who has the aggro first, then by percent
 - Each as `Name (Role)` — the role when WoW assigned one, else the class

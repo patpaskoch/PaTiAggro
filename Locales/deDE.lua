@@ -5,7 +5,6 @@ local L = ns.Locales.deDE or {}
 ns.Locales.deDE = L
 
 L.GENERAL = "Allgemein"
-L.TEST_TARGET = "Testgegner"
 L.LOCK_WINDOW = "Fenster sperren"
 L.SCALE = "Größe"
 L.HIDDEN_HINT = "ausgeblendet. /paggro show zeigt es wieder."
@@ -14,8 +13,8 @@ L.AGGRO_TOTAL = "AGGRO GESAMT"
 L.AGGRO_TARGET = "AGGRO ZIEL"
 L.AGGRO_TEAM = "AGGRO TEAM"
 L.HAS_AGGRO = "hat Aggro"
+L.CARD_ON_YOU = "auf dir"
 L.AGGRO_CONTROLLED = "%d / %d"
-L.AGGRO_NONE = "—"
 L.AGGRO_DANGER = "fast weg"
 L.AGGRO_UNKNOWN = "unklar"
 L.AGGRO_MORE = "+%d"

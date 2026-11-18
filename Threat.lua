@@ -99,9 +99,27 @@ local function guidOf(unit)
     return guid
 end
 
--- All enemies the group fights, each with .state (Aggro.Classify). Called at most every SCAN_DELAY seconds.
+-- Whether unit is your (enemy) target: true / false, nil when it cannot be told (UnitIsUnit secret or missing and
+-- a GUID unreadable). Compares unit tokens first (like OffTankTarget), the GUID only as a fallback; never names.
+local function sameAsTarget(unit, hasTarget, targetGuid)
+    if unit == "target" then return true end
+    if not hasTarget then return false end
+    if UnitIsUnit then
+        local same = flag(UnitIsUnit(unit, "target"))
+        if same ~= nil then return same end
+    end
+    local guid = guidOf(unit)
+    if guid and targetGuid then return guid == targetGuid end
+    return nil
+end
+
+-- All enemies the group fights, each with .state (Aggro.Classify) and .isTarget. Called at most every SCAN_DELAY
+-- seconds. Second result: true when for some enemy it could not be told whether it is your target (then the caller
+-- must not add the target a second time).
 function Threat.Scan()
-    local enemies, seen = {}, {}
+    local enemies, seen, targetUnclear = {}, {}, false
+    local hasTarget = isEnemy("target")
+    local targetGuid = hasTarget and guidOf("target") or nil
     local function consider(unit, needsGuid)
         if not isEnemy(unit) then return end
         local id = guidOf(unit)
@@ -114,14 +132,18 @@ function Threat.Scan()
         local enemy = readEnemy(unit)
         enemy.guid = id ~= unit and id or nil -- readable GUID only (number stability in Aggro.Number)
         enemy.state = Aggro.Classify(enemy)
-        if enemy.state then enemies[#enemies + 1] = enemy end
+        if not enemy.state then return end
+        local same = sameAsTarget(unit, hasTarget, targetGuid)
+        if same == nil then targetUnclear = true end
+        enemy.isTarget = same == true
+        enemies[#enemies + 1] = enemy
     end
     -- Nameplates first: an enemy that is also your target keeps its nameplate token (Plates.lua marks that plate).
     local hasPlates = next(plates) ~= nil
     for unit in pairs(plates) do consider(unit, false) end
     consider("target", hasPlates)
     for _, unit in ipairs(PARTY_TARGETS) do consider(unit, true) end
-    return enemies
+    return enemies, targetUnclear
 end
 
 -- UnitDetailedThreatSituation(unit, enemy) → isTanking, status, scaledPercent, …; returned as tanking, percent, status

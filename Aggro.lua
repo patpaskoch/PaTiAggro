@@ -142,6 +142,12 @@ function Aggro.CurrentRows(entries, max)
     return rows
 end
 
+-- A threat percent as a whole number 0-999; nil when it is not a readable number.
+local function readablePercent(percent)
+    if type(percent) ~= "number" then return nil end
+    return math.max(0, math.min(999, math.floor(percent + 0.5)))
+end
+
 -- Your own threat on one enemy, by your role (owner 2026-10-14). status = your threat status on it (0-3, nil = you are
 -- not on its threat list), percent = the scaled percent (100 = you pull it); either may be UNREADABLE.
 -- Tank: by status — while you tank, WoW reports 100 % for you, so a percent can never warn you. Healer/Damage: AGGRO
@@ -149,7 +155,7 @@ end
 -- Returns nil (not on its list) or { state = "GOOD"|"WARNING"|"DANGER"|"AGGRO"|"UNKNOWN", percent = 0-999 | nil }.
 function Aggro.SelfThreat(role, status, percent)
     if status == Aggro.UNREADABLE then return { state = "UNKNOWN" } end
-    local readable = type(percent) == "number" and math.max(0, math.min(999, math.floor(percent + 0.5))) or nil
+    local readable = readablePercent(percent)
     if role == "TANK" then
         local state = (status == 3 and "GOOD") or (status == 2 and "WARNING")
             or ((status == 0 or status == 1) and "DANGER") or nil
@@ -166,16 +172,63 @@ end
 -- UNKNOWN ranks above WARNING: an unreadable enemy could be the dangerous one — but below a readable DANGER or AGGRO.
 local SELF_RANK = { GOOD = 1, WARNING = 2, UNKNOWN = 3, DANGER = 4, AGGRO = 5 }
 
--- The worst of your SelfThreat results over several enemies (healer/damage: every enemy the group fights, since
--- healing threat lands on all of them, not only on a target). Ties: the higher percent. Returns nil for an empty list,
--- else that result (with its .name, if the caller set one) plus .onYou = how many of them attack you (AGGRO).
-function Aggro.SelfWorst(results)
-    local worst, onYou = nil, 0
-    for _, result in ipairs(results) do
-        if result.state == "AGGRO" then onYou = onYou + 1 end
-        local rank, best = SELF_RANK[result.state], worst and SELF_RANK[worst.state] or 0
-        if rank > best or (rank == best and (result.percent or 0) > (worst.percent or 0)) then worst = result end
+Aggro.MAX_SELF_CARDS = 4 -- small enemy cards beside the large one in AGGRO TOTAL (healer/damage)
+
+-- Your threat on each enemy you could pull (healer/damage, the AGGRO TOTAL cards): every scanned enemy — healing
+-- threat lands on all of them — plus your target when the scan does not have it (nobody attacked it yet).
+-- enemies: Threat.Scan entries (.unit, .name, .guid, .isTarget, .playerStatus, .playerPercent). A scanned target
+-- you have no threat on yet shows 0 %. target: nil (none, or the scan could not tell) or { unit, name, status,
+-- percent, zero } for your target; zero = a living enemy on no threat list (0 %). Returns SelfThreat results with
+-- .unit, .name, .guid and .isTarget added.
+-- Tank (owner 2026-11-11: cards in every view): each enemy the group fights by its aggro state — held = GOOD,
+-- slipping = WARNING, lost = DANGER — with your percent on it; enemies nobody of you holds come first.
+local TANK_CARD = { CONTROLLED = "GOOD", DANGER = "WARNING", LOST = "DANGER", UNKNOWN = "UNKNOWN" }
+
+function Aggro.SelfEntries(role, enemies, target)
+    local list, scannedTarget = {}, false
+    local function add(source, isTarget, status, percent, zero)
+        local result
+        if role == "TANK" and source.state then
+            local state = TANK_CARD[source.state]
+            result = state and { state = state, percent = state ~= "UNKNOWN" and readablePercent(percent) or nil }
+        else
+            result = Aggro.SelfThreat(role, status, percent)
+        end
+        if not result and isTarget and zero then result = { state = "GOOD", percent = 0 } end
+        if not result then return end
+        result.unit, result.name, result.guid, result.key = source.unit, source.name, source.guid, source.key
+        result.isTarget = isTarget
+        list[#list + 1] = result
     end
-    if not worst then return nil end
-    return { state = worst.state, percent = worst.percent, name = worst.name, onYou = onYou }
+    for _, enemy in ipairs(enemies) do
+        scannedTarget = scannedTarget or enemy.isTarget == true
+        add(enemy, enemy.isTarget == true, enemy.playerStatus, enemy.playerPercent, true)
+    end
+    if target and not scannedTarget then add(target, true, target.status, target.percent, target.zero) end
+    return list
+end
+
+-- AGGRO TOTAL as enemy cards (healer/damage, owner 2026-11-11): the enemy you target large, the others small beside
+-- it, worst first (SELF_RANK, then the higher percent, then the order of the list — stable within one scan). Without
+-- a target among them the worst one is the large card. entries: SelfThreat results with the caller's fields
+-- (.isTarget, .unit, .name …). Returns the large entry (nil for an empty list), the small ones (at most max) and how
+-- many did not fit.
+function Aggro.SelfCards(entries, max)
+    local sorted = {}
+    for index, entry in ipairs(entries) do sorted[index] = { entry = entry, index = index } end
+    table.sort(sorted, function(a, b)
+        local rankA, rankB = SELF_RANK[a.entry.state] or 0, SELF_RANK[b.entry.state] or 0
+        if rankA ~= rankB then return rankA > rankB end
+        local percentA, percentB = a.entry.percent or 0, b.entry.percent or 0
+        if percentA ~= percentB then return percentA > percentB end
+        return a.index < b.index
+    end)
+    local largeAt = 1
+    for position, item in ipairs(sorted) do
+        if item.entry.isTarget then largeAt = position break end
+    end
+    local large = table.remove(sorted, largeAt)
+    local small = {}
+    for position = 1, math.min(max, #sorted) do small[position] = sorted[position].entry end
+    return large and large.entry or nil, small, math.max(0, #sorted - max)
 end

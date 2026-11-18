@@ -315,4 +315,7 @@ Panel-Zeilen sind nicht klickbar (technisch blockiert, F17) und werden nicht get
   niemand angegriffen hat: groß mit „0 %“; ein Gegner, der dich angreift, zeigt „auf dir“ (rot) statt „unklar“
 - [ ] PT-AGGRO-038 Als Tank und bei „Meine Rolle: Auto“ ebenfalls Gegnerkarten; rechts oben „x / y“ (gelb, wenn dir einer
   fehlt); Gegner, die du verloren hast, zuerst und rot; `/paggro test` als Tank: sechs Gegner, Ghul rot (45 %)
+- [ ] PT-AGGRO-039 „AGGRO ZIEL“ steht ohne Gegnernamen daneben (Owner 2026-11-18: der Name steht schon groß auf der
+  Karte oben); als Heiler/Schaden steht „nicht das Ziel des Tanks“ weiter rechts in derselben Zeile; `/paggro test`
+  und echtes Ziel, jede Rolle; kein Lua-Fehler
 

@@ -5,7 +5,6 @@ local L = ns.Locales.enUS or {}
 ns.Locales.enUS = L
 
 L.GENERAL = "General"
-L.TEST_TARGET = "Test enemy"
 L.LOCK_WINDOW = "Lock window"
 L.SCALE = "Scale"
 L.HIDDEN_HINT = "hidden. /paggro show brings it back."
@@ -17,7 +16,6 @@ L.AGGRO_TEAM = "AGGRO TEAM"
 L.HAS_AGGRO = "has aggro"
 L.CARD_ON_YOU = "on you"
 L.AGGRO_CONTROLLED = "%d / %d"
-L.AGGRO_NONE = "—"
 L.AGGRO_DANGER = "slipping"
 L.AGGRO_UNKNOWN = "unclear"
 L.AGGRO_MORE = "+%d"

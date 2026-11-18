@@ -22,8 +22,12 @@ Regeln und Eintragen von Ergebnissen: [PaTiAdmin/docs/TESTING.md](https://github
 
 ## Installation / Laden
 
-- [ ] PT-TANK-001 Fresh Install aus dem Release-ZIP: genau ein Ordner `PaTiTank/`, Addon lädt allein
-- [ ] PT-TANK-002 PaTiTank erscheint in der AddOn-Liste mit Beschreibung
+- [x] PT-TANK-001 Fresh Install aus dem Release-ZIP: genau ein Ordner `PaTiTank/`, Addon lädt allein
+  - ✅ VERIFIED 2026-11-17
+  - Owner: auf der Ingame-Test-Seite „Geht“ (2026-11-17), nachgetragen 2026-11-18.
+- [x] PT-TANK-002 PaTiTank erscheint in der AddOn-Liste mit Beschreibung
+  - ✅ VERIFIED 2026-11-17
+  - Owner: auf der Ingame-Test-Seite „Geht“ (2026-11-17), nachgetragen 2026-11-18.
 - [x] PT-TANK-003 Icon in der AddOn-Liste korrekt, keine weiße oder fehlende Textur
   - ✅ VERIFIED 2026-10-02
   - Owner: die Icons erscheinen im Spiel in der AddOn-Liste korrekt.
@@ -33,7 +37,10 @@ Regeln und Eintragen von Ergebnissen: [PaTiAdmin/docs/TESTING.md](https://github
 - [x] PT-TANK-005 `/reload` ohne Lua-Fehler
   - ✅ VERIFIED 2026-10-18
   - Owner: auf der Ingame-Test-Seite „Geht“ (2026-10-18), nachgetragen 2026-11-07.
-- [ ] PT-TANK-006 `/pt debug` nennt die vorhandenen Threat-APIs und eine Aggro-Zeile
+- [x] PT-TANK-006 `/pt debug` nennt die vorhandenen Threat-APIs und eine Aggro-Zeile
+  - ✅ VERIFIED 2026-11-18
+  - Owner (Screenshot `/pt debug`, 2026-11-18): „Threat API yes · issecretvalue yes“,
+    Aggro-Zeile „UnitThreatSituation yes · nameplate events yes · party target events yes“, keine gefangenen Fehler.
 
 ## Fenster
 
@@ -50,11 +57,19 @@ Regeln und Eintragen von Ergebnissen: [PaTiAdmin/docs/TESTING.md](https://github
 - [ ] PT-TANK-014 Größe (Scale) wirkt
 - [ ] PT-TANK-015 Einstellungen öffnen (`/pt settings` und •••) und speichern
 - [ ] PT-TANK-016 Collapse/Expand über •••, Zustand bleibt nach `/reload`
-- [ ] PT-TANK-017 Test Mode `/pt test`: 6 Gegner, „5 / 6“, Ghul → Heiler, Zombie knapp; Zeilen `1 Ghul`, `2 Zombie`
+- [x] PT-TANK-017 Test Mode `/pt test`: 6 Gegner, „5 / 6“, Ghul → Heiler, Zombie knapp; Zeilen `1 Ghul`, `2 Zombie`
   ohne Namensschild-Nummern
-- [ ] PT-TANK-018 Panel-Deckkraft 30–100 %: nur der Hintergrund ändert sich
-- [ ] PT-TANK-019 Keine Einrast-Einstellung mehr, Fenster frei verschiebbar
-- [ ] PT-TANK-020 `/pt reset` setzt die Position zurück
+  - ✅ VERIFIED 2026-11-18
+  - Owner: auf der Ingame-Test-Seite „Geht“ (2026-11-18), nachgetragen 2026-11-18.
+- [x] PT-TANK-018 Panel-Deckkraft 30–100 %: nur der Hintergrund ändert sich
+  - ✅ VERIFIED 2026-11-18
+  - Owner: auf der Ingame-Test-Seite „Geht“ (2026-11-18), nachgetragen 2026-11-18.
+- [x] PT-TANK-019 Keine Einrast-Einstellung mehr, Fenster frei verschiebbar
+  - ✅ VERIFIED 2026-11-18
+  - Owner: auf der Ingame-Test-Seite „Geht“ (2026-11-18), nachgetragen 2026-11-18.
+- [x] PT-TANK-020 `/pt reset` setzt die Position zurück
+  - ✅ VERIFIED 2026-11-18
+  - Owner: auf der Ingame-Test-Seite „Geht“ (2026-11-18), nachgetragen 2026-11-18.
 
 ## SavedVariables
 
@@ -62,12 +77,16 @@ Regeln und Eintragen von Ergebnissen: [PaTiAdmin/docs/TESTING.md](https://github
 - [x] PT-TANK-031 Einstellungen bleiben nach Relog
   - ✅ VERIFIED 2026-11-10
   - Owner: 5 Spielsitzungen mit wiederholtem Einloggen, keine Auffälligkeiten
-- [ ] PT-TANK-032 Update mit alten Einstellungen: Position und Werte bleiben
+- [x] PT-TANK-032 Update mit alten Einstellungen: Position und Werte bleiben
+  - ✅ VERIFIED 2026-11-17
+  - Owner: auf der Ingame-Test-Seite „Geht“ (2026-11-17), nachgetragen 2026-11-18.
 - [ ] PT-TANK-033 „Standard wiederherstellen“ setzt die Einstellungen zurück
 
 ## Sprachen
 
-- [ ] PT-TANK-040 deDE: alle Texte deutsch
+- [x] PT-TANK-040 deDE: alle Texte deutsch
+  - ✅ VERIFIED 2026-11-17
+  - Owner: auf der Ingame-Test-Seite „Geht“ (2026-11-17), nachgetragen 2026-11-18.
 - [ ] PT-TANK-041 Sprache enUS in den Einstellungen: nach `/reload` englisch
 - [ ] PT-TANK-042 zhCN/zhTW/koKR: Englisch als Rückfall, keine Schlüsselnamen oder Kästchen
 - [ ] PT-TANK-043 Keine abgeschnittenen wichtigen Texte (deDE), auch lange Gegnernamen

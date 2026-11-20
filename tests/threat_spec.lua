@@ -84,8 +84,8 @@ describe("Threat.Scan", function()
         assert.is_false(enemies.B.isTarget)
         assert.is_false(unclear)
         _G.UnitIsUnit = nil
-        list, unclear = ns.Threat.Scan()
-        assert.is_true(unclear) -- secret GUIDs and no token compare: the caller must not add the target again
+        local _, again = ns.Threat.Scan()
+        assert.is_true(again) -- secret GUIDs and no token compare: the caller must not add the target again
     end)
 
     it("never uses a secret GUID as identity", function()

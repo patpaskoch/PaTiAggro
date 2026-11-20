@@ -53,10 +53,18 @@ Regeln und Eintragen von Ergebnissen: [PaTiAdmin/docs/TESTING.md](https://github
 - [x] PT-TANK-012 Position bleibt nach `/reload`
   - ✅ VERIFIED 2026-11-08
   - Owner: /patitest 2× grün in-game (vor und nach /reload, 42 ok, 0 Fehler; 7 PaTi-Addons installiert)
-- [ ] PT-TANK-013 Lock/Unlock (••• und `/pt lock` / `unlock`): gesperrt nicht verschiebbar
-- [ ] PT-TANK-014 Größe (Scale) wirkt
-- [ ] PT-TANK-015 Einstellungen öffnen (`/pt settings` und •••) und speichern
-- [ ] PT-TANK-016 Collapse/Expand über •••, Zustand bleibt nach `/reload`
+- [x] PT-TANK-013 Lock/Unlock (••• und `/pt lock` / `unlock`): gesperrt nicht verschiebbar
+  - ✅ VERIFIED 2026-11-10
+  - Owner: auf der Ingame-Testseite als „Geht“ abgehakt.
+- [x] PT-TANK-014 Größe (Scale) wirkt
+  - ✅ VERIFIED 2026-11-10
+  - Owner: auf der Ingame-Testseite als „Geht“ abgehakt.
+- [x] PT-TANK-015 Einstellungen öffnen (`/pt settings` und •••) und speichern
+  - ✅ VERIFIED 2026-11-10
+  - Owner: auf der Ingame-Testseite als „Geht“ abgehakt.
+- [x] PT-TANK-016 Collapse/Expand über •••, Zustand bleibt nach `/reload`
+  - ✅ VERIFIED 2026-11-10
+  - Owner: auf der Ingame-Testseite als „Geht“ abgehakt.
 - [x] PT-TANK-017 Test Mode `/pt test`: 6 Gegner, „5 / 6“, Ghul → Heiler, Zombie knapp; Zeilen `1 Ghul`, `2 Zombie`
   ohne Namensschild-Nummern
   - ✅ VERIFIED 2026-11-18
@@ -322,4 +330,6 @@ Panel-Zeilen sind nicht klickbar (technisch blockiert, F17) und werden nicht get
   (du und die Gruppe auf deinem Ziel), ohne Lücke darüber; als Heiler/Schaden mit anderem Ziel als der Tank erscheint
   „nicht das Ziel des Tanks“ in einer eigenen Zeile über den Balken und verschwindet wieder, Fenster passt sich an;
   `/paggro test` und echtes Ziel; kein Lua-Fehler
-
+- [ ] PT-AGGRO-041 Keine Überschrift „AGGRO GESAMT“ mehr (Owner 2026-11-20): als Heiler/Schaden beginnen die
+  Gegnerkarten ganz oben ohne Lücke; als Tank steht nur „x / y“ klein rechts über den Karten, bei mehr als fünf Gegnern
+  zusätzlich „+N“; `/paggro test` in jeder Rolle, nichts überlappt; kein Lua-Fehler

@@ -55,7 +55,8 @@ numbers at all).
 The window has three sections, top to bottom, with clear space between them:
 
 ```
-5 / 6  AGGRO TOTAL
+                              5 / 6
+[enemy cards]
 
 [ Brom (Tank)              has aggro ]   green: the right one has it
 [ Lyra (Damage)                 84 % ]   yellow from 70 %, red from 90 % (100 % = they take it)
@@ -66,8 +67,8 @@ AGGRO TEAM
 ▌1 Ghoul                Mira (Healer)    red: Mira has it
 ▌2 Zombie               Lyra (Damage)    yellow: you still hold it, Lyra is about to take it
 ```
-The section names are small captions in the accent colour, like PaTiHeal's "TARGET" mark; AGGRO TARGET has none
-(the enemy card above already names your target). Only sections with content are shown: no AGGRO TOTAL without enemies, no AGGRO TARGET without an enemy target, no AGGRO TEAM without rows.
+The section names are small captions in the accent colour, like PaTiHeal's "TARGET" mark; AGGRO TOTAL and AGGRO TARGET have none
+(the enemy cards speak for themselves and already name your target). Only sections with content are shown: no AGGRO TOTAL without enemies, no AGGRO TARGET without an enemy target, no AGGRO TEAM without rows.
 
 **AGGRO TOTAL**
 - Tank: the same enemy cards (lost enemies first, in red) and how many of them you hold (`5 / 6`)

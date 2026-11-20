@@ -5,6 +5,8 @@ History before this file: `git log`.
 
 ## [Unreleased]
 ### Changed
+- AGGRO TOTAL has no caption any more (owner 2026-11-20): the enemy cards start at the top; the small line above them
+  appears only for the tank's "x / y" or "+N".
 - AGGRO TARGET shows only the bars, without its caption and the enemy name (owner 2026-11-18): the large enemy card in
   AGGRO TOTAL already shows your target's portrait and name. The "not the tank's target" hint takes its own line above
   the bars only while it is shown.

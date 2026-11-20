@@ -71,12 +71,12 @@ local function newSection(titleKey)
     return section
 end
 
--- AGGRO TOTAL: the number large on the left, the caption small beside it.
+-- AGGRO TOTAL: no caption (owner 2026-11-20: "AGGRO GESAMT" is not needed, the enemy cards speak for themselves).
 local total = newSection("AGGRO_TOTAL")
+total.title:Hide()
 total.value:SetFontObject(UI.Fonts.Title)
 total.value:SetPoint("TOPLEFT", PAD, -1)
 total.value:SetJustifyH("LEFT")
-total.title:SetPoint("BOTTOMLEFT", total.value, "BOTTOMRIGHT", UI.Spacing.SM, 1)
 
 -- AGGRO TOTAL, healer/damage (owner 2026-11-11): enemy cards instead of one number — portrait, name and your percent.
 -- The enemy you target is large; up to Aggro.MAX_SELF_CARDS others stand beside it at half the size; a single enemy
@@ -111,7 +111,6 @@ local largeCard = newCard(LARGE)
 local smallCards = {}
 for index = 1, Aggro.MAX_SELF_CARDS do
     local card = newCard(SMALL)
-    card:SetPoint("TOPLEFT", PAD + LARGE_WIDTH + UI.Spacing.SM + (index - 1) * (SMALL_WIDTH + UI.Spacing.XS), -CAPTION)
     card:SetSize(SMALL_WIDTH, SMALL + 2 * CARD_TEXT)
     card.name:SetPoint("TOPLEFT", 0, -SMALL - 2)
     card.name:SetWidth(SMALL_WIDTH)
@@ -119,35 +118,37 @@ for index = 1, Aggro.MAX_SELF_CARDS do
     card.value:SetWidth(SMALL_WIDTH)
     smallCards[index] = card
 end
--- "+2": enemies that did not fit, on the caption line.
+-- The tank's "4 / 5" and "+2" (enemies that did not fit) on a small line above the cards; without them the cards move up.
 total.more = total:CreateFontString(nil, "OVERLAY", UI.Fonts.Text)
 total.more:SetPoint("TOPRIGHT", -PAD, 0)
 UI.Paint(total.more, "SetTextColor", "TextMuted")
 
--- Tank: the large number with the caption beside it. Cards: the caption on top, the cards below.
+-- Tank: the large number. Cards: the cards, with the count line above them when there is one.
 local cardView -- nil until the first paint
 local function setCardView(cards)
     if cards == cardView then return end
     cardView = cards
     total.value:SetShown(not cards)
     total.more:SetShown(cards)
-    total.title:ClearAllPoints()
-    if cards then
-        total.title:SetPoint("TOPLEFT", PAD, 0)
-    else
-        total.title:SetPoint("BOTTOMLEFT", total.value, "BOTTOMRIGHT", UI.Spacing.SM, 1)
+    if not cards then
         largeCard:Hide()
         for _, card in ipairs(smallCards) do card:Hide() end
     end
 end
 
 -- One enemy: the large card spans the width, name and percent beside the portrait. More: name and percent below it.
-local largeAlone -- nil until the first card paint
-local function placeLargeCard(alone)
-    if alone == largeAlone then return end
-    largeAlone = alone
+local largeAlone, cardTop -- nil until the first card paint
+local function placeLargeCard(alone, top)
+    if alone == largeAlone and top == cardTop then return end
+    if top ~= cardTop then
+        for index, card in ipairs(smallCards) do
+            card:ClearAllPoints()
+            card:SetPoint("TOPLEFT", PAD + LARGE_WIDTH + UI.Spacing.SM + (index - 1) * (SMALL_WIDTH + UI.Spacing.XS), -top)
+        end
+    end
+    largeAlone, cardTop = alone, top
     largeCard:ClearAllPoints()
-    largeCard:SetPoint("TOPLEFT", PAD, -CAPTION)
+    largeCard:SetPoint("TOPLEFT", PAD, -top)
     largeCard.name:ClearAllPoints()
     largeCard.value:ClearAllPoints()
     if alone then
@@ -481,17 +482,19 @@ local function paintCard(card, entry)
     card.value:SetTextColor(UI.Color(SELF_COLOR[entry.state] or "Text"))
 end
 
--- AGGRO TOTAL: the enemy cards (see newCard), in every view. count: the tank's "4 / 5" on the caption line (nil for
--- healer/damage). Returns whether there is anything to show and the height.
+-- AGGRO TOTAL: the enemy cards (see newCard), in every view. count: the tank's "4 / 5" on the line above the cards (nil
+-- for healer/damage). Returns whether there is anything to show and the height.
 local function paintSelfTotal(enemies, targetUnclear, count)
     local large, small, hidden = Aggro.SelfCards(selfEntries(enemies, targetUnclear), Aggro.MAX_SELF_CARDS)
-    placeLargeCard(#small == 0)
+    local more = hidden > 0 and ("+%d"):format(hidden) or nil
+    local line = count and more and (count .. "  " .. more) or count or more
+    local top = line and CAPTION or 0
+    placeLargeCard(#small == 0, top)
     paintCard(largeCard, large)
     for index, card in ipairs(smallCards) do paintCard(card, small[index]) end
-    local more = hidden > 0 and ("+%d"):format(hidden) or nil
-    total.more:SetText(count and more and (count .. "  " .. more) or count or more or "")
+    total.more:SetText(line or "")
     if not large then return false, LINE + 2 end
-    return true, CAPTION + (#small == 0 and LARGE or LARGE + 2 * CARD_TEXT)
+    return true, top + (#small == 0 and LARGE or LARGE + 2 * CARD_TEXT)
 end
 
 local function paintAggro()

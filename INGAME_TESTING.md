@@ -330,4 +330,6 @@ Panel-Zeilen sind nicht klickbar (technisch blockiert, F17) und werden nicht get
   (du und die Gruppe auf deinem Ziel), ohne Lücke darüber; als Heiler/Schaden mit anderem Ziel als der Tank erscheint
   „nicht das Ziel des Tanks“ in einer eigenen Zeile über den Balken und verschwindet wieder, Fenster passt sich an;
   `/paggro test` und echtes Ziel; kein Lua-Fehler
-
+- [ ] PT-AGGRO-041 Keine Überschrift „AGGRO GESAMT“ mehr (Owner 2026-11-20): als Heiler/Schaden beginnen die
+  Gegnerkarten ganz oben ohne Lücke; als Tank steht nur „x / y“ klein rechts über den Karten, bei mehr als fünf Gegnern
+  zusätzlich „+N“; `/paggro test` in jeder Rolle, nichts überlappt; kein Lua-Fehler

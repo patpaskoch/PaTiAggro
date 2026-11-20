@@ -124,6 +124,7 @@ Regeln und Eintragen von Ergebnissen: [PaTiAdmin/docs/TESTING.md](https://github
 - [ ] PT-TANK-116 Begleiter (Jägerpet/Wichtel) wird als „Begleiter“ berücksichtigt; im Kampf kein Lua-Fehler, Werte
   aktualisieren sich laufend (nicht „unklar“ hängen bleiben)
   - MANUAL RETEST REQUIRED
+  - Owner 2026-11-20: nicht testbar — spielt weder Jäger noch Hexenmeister (bleibt offen für einen Tester mit Begleiter).
 
 ## Aggro Control
 

@@ -49,7 +49,7 @@ numbers at all).
 ## Feature details
 
 - **My role** (Settings): Auto, Tank, Healer or Damage. Auto uses the role WoW reports for you in the group; without
-  one, but with another member assigned as tank, it shows your own threat; without any role it shows the tank view.
+  one, but with another member assigned as tank, it shows your own threat; solo it shows your own threat too; in a group without any role it shows the tank view.
   Never guessed from your class — as healer or damage without group roles, set "My role" once (saved per character).
 
 The window has three sections, top to bottom, with clear space between them:

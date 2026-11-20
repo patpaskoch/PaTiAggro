@@ -367,7 +367,7 @@ end
 local role
 
 local function updateRole()
-    local new = Logic.EffectiveRole(DB.myRole, Threat.PlayerRole(), Threat.OtherTank())
+    local new = Logic.EffectiveRole(DB.myRole, Threat.PlayerRole(), Threat.OtherTank(), IsInGroup() == true)
     if new == role then return end
     role = new
     lastNumbers = {}

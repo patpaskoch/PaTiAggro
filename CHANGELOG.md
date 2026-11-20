@@ -4,6 +4,10 @@ Format: `## [Unreleased]` / `## [x.y.z] - YYYY-MM-DD` with Added, Changed, Fixed
 History before this file: `git log`.
 
 ## [Unreleased]
+### Changed
+- "My role: Auto" solo without a WoW role shows your own threat instead of the tank view (owner 2026-11-20): the tank
+  view sent your target to PaTiAlerts as "lost" whenever it attacked someone else. In a group without roles the tank
+  view stays; "My role: Tank" always shows it.
 ### Added
 - Health bar on the large enemy card (owner 2026-11-20): a thin green bar right below the portrait shows the
   health of the enemy you target (or of the large card's enemy); updated a few times a second while shown.

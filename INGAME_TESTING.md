@@ -337,3 +337,6 @@ Panel-Zeilen sind nicht klickbar (technisch blockiert, F17) und werden nicht get
 - [ ] PT-AGGRO-042 Lebensbalken am großen Gegnerbild (Owner 2026-11-20): Gegner anvisieren → direkt unter dem großen Gegnerbild ein
   schmaler grüner Balken mit seinem Leben; im Kampf wird er kürzer, Zielwechsel → Balken des neuen Ziels; kein Ziel und
   keine Gegner → kein Balken; `/paggro test`: Balken zu 60 % gefüllt; kein Lua-Fehler
+- [ ] PT-AGGRO-043 Solo mit „Meine Rolle: Auto“ (Owner 2026-11-20: das Ziel stand in PaTiAlerts): `/paggro debug`
+  zeigt „view DAMAGER“; die Gegnerkarten zeigen deine Prozent, kein „x / y“; greift dein Ziel jemand anderen an
+  (anderer Spieler, Wache), erscheint nichts in PaTiAlerts; mit „Meine Rolle: Tank“ wieder die Tank-Ansicht

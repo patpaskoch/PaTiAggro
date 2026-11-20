@@ -54,9 +54,11 @@ end
 -- secrecy; nil without one). Without your own role: when another member has the WoW role Tank you are not the tank →
 -- your own threat (owner 2026-10-14: a healer saw "0 / 5" of the tank view). Without any role the tank view stays
 -- (never guessed from the class); "My role" in the settings fixes the view per character.
-function Logic.EffectiveRole(setting, assigned, otherTank)
+-- Solo (inGroup false) without a role: your own threat too (owner 2026-11-20: the tank view put the target into
+-- PaTiAlerts whenever it attacked someone else). The tank view with AUTO needs a group.
+function Logic.EffectiveRole(setting, assigned, otherTank, inGroup)
     if setting ~= "AUTO" and Logic.ROLE_SET[setting] then return setting end
     if assigned == "TANK" or assigned == "HEALER" or assigned == "DAMAGER" then return assigned end
-    if otherTank then return "DAMAGER" end
+    if otherTank or inGroup == false then return "DAMAGER" end
     return "TANK"
 end

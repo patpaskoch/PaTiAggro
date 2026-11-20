@@ -109,13 +109,15 @@ local function newCard(size)
 end
 local largeCard = newCard(LARGE)
 
--- Health of the large card's enemy (owner 2026-11-20): a thin bar along the bottom of the portrait, in every layout.
+-- Health of the large card's enemy (owner 2026-11-20): a thin bar right below the enemy portrait, as wide as it, in
+-- every layout ("unter das Icon"); name and percent move down by HEALTH_SPACE.
 -- A plain StatusBar: health may be secret, so it only reaches SetMinMaxValues/SetValue (Aggro.HealthBar). WoW sends no
 -- UNIT_HEALTH for nameplate-less tokens reliably, so the bar re-reads its token a few times a second while shown.
-local HEALTH_BAR, HEALTH_REFRESH, TEST_HEALTH = 5, 0.2, 0.6
+local HEALTH_BAR, HEALTH_GAP, HEALTH_REFRESH, TEST_HEALTH = 5, 2, 0.2, 0.6
+local HEALTH_SPACE = HEALTH_GAP + HEALTH_BAR
 local health = CreateFrame("StatusBar", nil, largeCard)
-health:SetPoint("BOTTOMLEFT", largeCard.portrait, "BOTTOMLEFT")
-health:SetPoint("BOTTOMRIGHT", largeCard.portrait, "BOTTOMRIGHT")
+health:SetPoint("TOPLEFT", largeCard.frame, "BOTTOMLEFT", 0, -HEALTH_GAP)
+health:SetPoint("TOPRIGHT", largeCard.frame, "BOTTOMRIGHT", 0, -HEALTH_GAP)
 health:SetHeight(HEALTH_BAR)
 health:SetStatusBarTexture(UI.WHITE)
 UI.Paint(health, "SetStatusBarColor", "Health")
@@ -195,18 +197,18 @@ local function placeLargeCard(alone, top)
     largeCard.name:ClearAllPoints()
     largeCard.value:ClearAllPoints()
     if alone then
-        largeCard:SetSize(BAR_WIDTH, LARGE)
+        largeCard:SetSize(BAR_WIDTH, LARGE + HEALTH_SPACE)
         largeCard.name:SetPoint("TOPLEFT", LARGE + UI.Spacing.MD, -UI.Spacing.SM)
         largeCard.name:SetWidth(BAR_WIDTH - LARGE - UI.Spacing.MD)
         largeCard.value:SetWidth(BAR_WIDTH - LARGE - UI.Spacing.MD)
         largeCard.value:SetPoint("TOPLEFT", largeCard.name, "BOTTOMLEFT", 0, -UI.Spacing.SM)
         largeCard.value:SetFontObject(UI.Fonts.Title)
     else
-        largeCard:SetSize(LARGE_WIDTH, LARGE + 2 * CARD_TEXT)
-        largeCard.name:SetPoint("TOPLEFT", 0, -LARGE - 2)
+        largeCard:SetSize(LARGE_WIDTH, LARGE + HEALTH_SPACE + 2 * CARD_TEXT)
+        largeCard.name:SetPoint("TOPLEFT", 0, -LARGE - HEALTH_SPACE - 2)
         largeCard.name:SetWidth(LARGE_WIDTH)
         largeCard.value:SetWidth(LARGE_WIDTH)
-        largeCard.value:SetPoint("TOPLEFT", 0, -LARGE - 2 - CARD_TEXT)
+        largeCard.value:SetPoint("TOPLEFT", 0, -LARGE - HEALTH_SPACE - 2 - CARD_TEXT)
         largeCard.value:SetFontObject(UI.Fonts.Text)
     end
 end
@@ -538,7 +540,7 @@ local function paintSelfTotal(enemies, targetUnclear, count)
     for index, card in ipairs(smallCards) do paintCard(card, small[index]) end
     total.more:SetText(line or "")
     if not large then return false, LINE + 2 end
-    return true, top + (#small == 0 and LARGE or LARGE + 2 * CARD_TEXT)
+    return true, top + HEALTH_SPACE + (#small == 0 and LARGE or LARGE + 2 * CARD_TEXT)
 end
 
 local function paintAggro()

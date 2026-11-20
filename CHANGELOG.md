@@ -5,7 +5,7 @@ History before this file: `git log`.
 
 ## [Unreleased]
 ### Added
-- Health bar on the large enemy card (owner 2026-11-20): a thin green bar along the bottom of the portrait shows the
+- Health bar on the large enemy card (owner 2026-11-20): a thin green bar right below the portrait shows the
   health of the enemy you target (or of the large card's enemy); updated a few times a second while shown.
 ### Added
 - Locking or unlocking the window (••• menu, slash command or settings) now answers with a chat line,

@@ -108,6 +108,49 @@ local function newCard(size)
     return card
 end
 local largeCard = newCard(LARGE)
+
+-- Health of the large card's enemy (owner 2026-11-20): a thin bar along the bottom of the portrait, in every layout.
+-- A plain StatusBar: health may be secret, so it only reaches SetMinMaxValues/SetValue (Aggro.HealthBar). WoW sends no
+-- UNIT_HEALTH for nameplate-less tokens reliably, so the bar re-reads its token a few times a second while shown.
+local HEALTH_BAR, HEALTH_REFRESH, TEST_HEALTH = 5, 0.2, 0.6
+local health = CreateFrame("StatusBar", nil, largeCard)
+health:SetPoint("BOTTOMLEFT", largeCard.portrait, "BOTTOMLEFT")
+health:SetPoint("BOTTOMRIGHT", largeCard.portrait, "BOTTOMRIGHT")
+health:SetHeight(HEALTH_BAR)
+health:SetStatusBarTexture(UI.WHITE)
+UI.Paint(health, "SetStatusBarColor", "Health")
+local healthBack = health:CreateTexture(nil, "BACKGROUND")
+healthBack:SetAllPoints()
+UI.Paint(healthBack, "SetColorTexture", "Background")
+health:Hide()
+local function readHealth(token)
+    local maximum, value = Aggro.HealthBar(UnitHealth(token), UnitHealthMax(token), isSecret)
+    if maximum then
+        health:SetMinMaxValues(0, maximum)
+        health:SetValue(value)
+    end
+    return maximum ~= nil
+end
+do
+    local since = 0
+    health:SetScript("OnUpdate", function(_, elapsed)
+        since = since + elapsed
+        if since < HEALTH_REFRESH or not health.token then return end
+        since = 0
+        readHealth(health.token)
+    end)
+end
+-- entry: the large card's entry (nil = none). Test mode shows a fixed example.
+local function paintHealth(entry)
+    health.token = entry and entry.unit or nil
+    if entry and not entry.unit and testMode then
+        health:SetMinMaxValues(0, 1)
+        health:SetValue(TEST_HEALTH)
+        health:Show()
+        return
+    end
+    health:SetShown(health.token ~= nil and readHealth(health.token))
+end
 local smallCards = {}
 for index = 1, Aggro.MAX_SELF_CARDS do
     local card = newCard(SMALL)
@@ -491,6 +534,7 @@ local function paintSelfTotal(enemies, targetUnclear, count)
     local top = line and CAPTION or 0
     placeLargeCard(#small == 0, top)
     paintCard(largeCard, large)
+    paintHealth(large)
     for index, card in ipairs(smallCards) do paintCard(card, small[index]) end
     total.more:SetText(line or "")
     if not large then return false, LINE + 2 end

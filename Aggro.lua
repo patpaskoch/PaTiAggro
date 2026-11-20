@@ -232,3 +232,12 @@ function Aggro.SelfCards(entries, max)
     for position = 1, math.min(max, #sorted) do small[position] = sorted[position].entry end
     return large and large.entry or nil, small, math.max(0, #sorted - max)
 end
+
+-- Health bar on the large enemy card (owner 2026-11-20: "den vom Ziel würde ich gerne sehen"): maximum and value, or
+-- nil when there is nothing to show. Secret values pass through untouched (only a StatusBar takes them, AGENTS.md §8);
+-- plain ones need a maximum above 0. Same rule as PaTiGroup's tank target bar.
+function Aggro.HealthBar(health, maximum, isSecret)
+    if isSecret(health) or isSecret(maximum) then return maximum, health end
+    if type(health) ~= "number" or type(maximum) ~= "number" or maximum <= 0 then return nil end
+    return maximum, health
+end

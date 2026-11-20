@@ -263,3 +263,24 @@ describe("Aggro.SelfCards", function()
     end)
 end)
 
+
+describe("Aggro.HealthBar (target health on the large card, owner 2026-11-20)", function()
+    local SECRET = setmetatable({}, { __eq = function() error("secret compared") end,
+        __lt = function() error("secret compared") end, __le = function() error("secret compared") end })
+    local function isSecret(value) return rawequal(value, SECRET) end
+
+    it("plain values: maximum and value; nothing without a usable maximum", function()
+        local Aggro = load()
+        assert.same({ 200, 120 }, { Aggro.HealthBar(120, 200, isSecret) })
+        assert.is_nil(Aggro.HealthBar(120, 0, isSecret))
+        assert.is_nil(Aggro.HealthBar(nil, 200, isSecret))
+    end)
+
+    it("secret values pass straight to the widget, never compared", function()
+        local Aggro = load()
+        local maximum, value = Aggro.HealthBar(SECRET, SECRET, isSecret)
+        assert.is_true(rawequal(maximum, SECRET) and rawequal(value, SECRET))
+        maximum, value = Aggro.HealthBar(SECRET, 200, isSecret)
+        assert.is_true(maximum == 200 and rawequal(value, SECRET))
+    end)
+end)

@@ -334,3 +334,6 @@ Panel-Zeilen sind nicht klickbar (technisch blockiert, F17) und werden nicht get
 - [ ] PT-AGGRO-041 Keine Überschrift „AGGRO GESAMT“ mehr (Owner 2026-11-20): als Heiler/Schaden beginnen die
   Gegnerkarten ganz oben ohne Lücke; als Tank steht nur „x / y“ klein rechts über den Karten, bei mehr als fünf Gegnern
   zusätzlich „+N“; `/paggro test` in jeder Rolle, nichts überlappt; kein Lua-Fehler
+- [ ] PT-AGGRO-042 Lebensbalken am großen Gegnerbild (Owner 2026-11-20): Gegner anvisieren → unten am großen Bild ein
+  schmaler grüner Balken mit seinem Leben; im Kampf wird er kürzer, Zielwechsel → Balken des neuen Ziels; kein Ziel und
+  keine Gegner → kein Balken; `/paggro test`: Balken zu 60 % gefüllt; kein Lua-Fehler

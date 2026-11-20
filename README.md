@@ -74,7 +74,8 @@ The section names are small captions in the accent colour, like PaTiHeal's "TARG
 - Tank: the same enemy cards (lost enemies first, in red) and how many of them you hold (`5 / 6`)
 - Healer/damage: a card per enemy you could pull — portrait, name and your threat on it (healing threat lands on
   every enemy the group fights). The enemy you target is large, up to four others stand beside it at half the size,
-  worst first ("+2" for the rest); a single enemy uses the whole width. Frame and percent: grey below 70 %, yellow
+  worst first ("+2" for the rest); a single enemy uses the whole width. The large card has a thin health bar along
+  the bottom of the portrait. Frame and percent: grey below 70 %, yellow
   from 70 %, red from 90 % or when it attacks you. The cards are not clickable
 
 **AGGRO TARGET** — the bars right below the enemy cards, without a caption

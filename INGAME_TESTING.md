@@ -110,8 +110,12 @@ Regeln und Eintragen von Ergebnissen: [PaTiAdmin/docs/TESTING.md](https://github
   - Owner 2026-10-14: Anzeige zu voll („Ziel: kein Ziel ausgewählt“ doppelt) → Ziel-Zeile entfernt, siehe PT-AGGRO-017
   - 🔧 FIX IMPLEMENTED 2026-10-14
   - MANUAL RETEST REQUIRED
-- [ ] PT-TANK-051 Aktuelles Ziel wird angezeigt und wechselt mit
-- [ ] PT-TANK-052 Eigene Bedrohung auf dem Ziel wird angezeigt
+- [x] PT-TANK-051 Aktuelles Ziel wird angezeigt und wechselt mit
+  - ✅ VERIFIED 2026-11-20
+  - Owner: auf der Testseite mit „Geht“ bestätigt.
+- [x] PT-TANK-052 Eigene Bedrohung auf dem Ziel wird angezeigt
+  - ✅ VERIFIED 2026-11-20
+  - Owner: auf der Testseite mit „Geht“ bestätigt.
 - ~~PT-TANK-114 Zeile „Nächster:“ in der Gruppe: wer am nächsten am Aggro-Ziehen ist (Rolle oder Name) mit Prozent;~~
   erscheint nur ab 70 % (gelb), rot ab 90 %; unter 70 % keine Zeile; bei 100 % zieht dieser Spieler wirklich
   - 🔧 FIX IMPLEMENTED 2026-10-11 (Owner-Wunsch: vorher sehen, wer gleich Aggro zieht)
@@ -278,11 +282,13 @@ Panel-Zeilen sind nicht klickbar (technisch blockiert, F17) und werden nicht get
 - [ ] PT-AGGRO-026 AGGRO TEAM: rechts „Name (Rolle)“ statt nur Rolle — rot: wer den Gegner hat, gelb: wer ihn gleich
   übernimmt; `/paggro test`: Ghul → Mira (Heiler), Zombie → Lyra (Schaden)
   - MANUAL RETEST REQUIRED
-- [ ] PT-AGGRO-027 Bereichsnamen klein in Akzentfarbe wie „ZIEL“ bei PaTiHeal: oben groß „5 / 6“, daneben klein
+- [x] PT-AGGRO-027 Bereichsnamen klein in Akzentfarbe wie „ZIEL“ bei PaTiHeal: oben groß „5 / 6“, daneben klein
   „AGGRO GESAMT“; unter den Ziel-Balken klein „AGGRO ZIEL“ mit Gegnernamen; „AGGRO TEAM“ klein über der Liste
   - Owner 2026-10-14: Design passt nicht zu PaTiHeal, Bereichsnamen zu groß → umgestellt
   - 🔧 FIX IMPLEMENTED 2026-10-14
   - MANUAL RETEST REQUIRED
+  - ✅ VERIFIED 2026-11-20
+  - Owner: auf der Testseite mit „Geht“ bestätigt.
 - [ ] PT-AGGRO-028 Nur Bereiche mit Inhalt: ohne Gegner kein AGGRO GESAMT, ohne feindliches Ziel kein AGGRO ZIEL, ohne
   Problem-Gegner kein AGGRO TEAM; Fenster schrumpft ohne Lücke. „AGGRO ZIEL“ steht über den Balken; Bereichsnamen
   etwas kleiner; über AGGRO TEAM mehr Abstand, unten weniger. „(Tank)“, „(Heiler)“ usw. und der Gegnername hellgrau
@@ -324,19 +330,27 @@ Panel-Zeilen sind nicht klickbar (technisch blockiert, F17) und werden nicht get
   niemand angegriffen hat: groß mit „0 %“; ein Gegner, der dich angreift, zeigt „auf dir“ (rot) statt „unklar“
 - [ ] PT-AGGRO-038 Als Tank und bei „Meine Rolle: Auto“ ebenfalls Gegnerkarten; rechts oben „x / y“ (gelb, wenn dir einer
   fehlt); Gegner, die du verloren hast, zuerst und rot; `/paggro test` als Tank: sechs Gegner, Ghul rot (45 %)
-- [ ] PT-AGGRO-039 „AGGRO ZIEL“ steht ohne Gegnernamen daneben (Owner 2026-11-18: der Name steht schon groß auf der
+- [x] PT-AGGRO-039 „AGGRO ZIEL“ steht ohne Gegnernamen daneben (Owner 2026-11-18: der Name steht schon groß auf der
   Karte oben); als Heiler/Schaden steht „nicht das Ziel des Tanks“ weiter rechts in derselben Zeile; `/paggro test`
   und echtes Ziel, jede Rolle; kein Lua-Fehler
-- [ ] PT-AGGRO-040 Keine Überschrift „AGGRO ZIEL“ mehr (Owner 2026-11-18): unter den Gegnerkarten gleich die Balken
+  - ✅ VERIFIED 2026-11-20
+  - Owner: auf der Testseite mit „Geht“ bestätigt.
+- [x] PT-AGGRO-040 Keine Überschrift „AGGRO ZIEL“ mehr (Owner 2026-11-18): unter den Gegnerkarten gleich die Balken
   (du und die Gruppe auf deinem Ziel), ohne Lücke darüber; als Heiler/Schaden mit anderem Ziel als der Tank erscheint
   „nicht das Ziel des Tanks“ in einer eigenen Zeile über den Balken und verschwindet wieder, Fenster passt sich an;
   `/paggro test` und echtes Ziel; kein Lua-Fehler
-- [ ] PT-AGGRO-041 Keine Überschrift „AGGRO GESAMT“ mehr (Owner 2026-11-20): als Heiler/Schaden beginnen die
+  - ✅ VERIFIED 2026-11-20
+  - Owner: auf der Testseite mit „Geht“ bestätigt.
+- [x] PT-AGGRO-041 Keine Überschrift „AGGRO GESAMT“ mehr (Owner 2026-11-20): als Heiler/Schaden beginnen die
   Gegnerkarten ganz oben ohne Lücke; als Tank steht nur „x / y“ klein rechts über den Karten, bei mehr als fünf Gegnern
   zusätzlich „+N“; `/paggro test` in jeder Rolle, nichts überlappt; kein Lua-Fehler
-- [ ] PT-AGGRO-042 Lebensbalken am großen Gegnerbild (Owner 2026-11-20): Gegner anvisieren → direkt unter dem großen Gegnerbild ein
+  - ✅ VERIFIED 2026-11-20
+  - Owner: auf der Testseite mit „Geht“ bestätigt.
+- [x] PT-AGGRO-042 Lebensbalken am großen Gegnerbild (Owner 2026-11-20): Gegner anvisieren → direkt unter dem großen Gegnerbild ein
   schmaler grüner Balken mit seinem Leben; im Kampf wird er kürzer, Zielwechsel → Balken des neuen Ziels; kein Ziel und
   keine Gegner → kein Balken; `/paggro test`: Balken zu 60 % gefüllt; kein Lua-Fehler
+  - ✅ VERIFIED 2026-11-20
+  - Owner: auf der Testseite mit „Geht“ bestätigt.
 - [ ] PT-AGGRO-043 Solo mit „Meine Rolle: Auto“ (Owner 2026-11-20: das Ziel stand in PaTiAlerts): `/paggro debug`
   zeigt „view DAMAGER“; die Gegnerkarten zeigen deine Prozent, kein „x / y“; greift dein Ziel jemand anderen an
   (anderer Spieler, Wache), erscheint nichts in PaTiAlerts; mit „Meine Rolle: Tank“ wieder die Tank-Ansicht
